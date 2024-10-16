@@ -9,6 +9,7 @@ import com.google.firebase.ktx.Firebase
 interface UserRepository {
     suspend fun createUser(user: User)
     suspend fun getCurrentUser():User?
+    abstract fun getUserById(userId: String): User?
 }
 
 class UserRepositoryImpl(
@@ -24,6 +25,10 @@ class UserRepositoryImpl(
         } ?: run {
            return null
         }
+    }
+
+    override fun getUserById(userId: String): User? {
+        TODO("Not yet implemented")
     }
 
 }
