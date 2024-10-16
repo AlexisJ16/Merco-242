@@ -52,43 +52,64 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
 @Composable
-fun App() {
-    val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "profile") {
-        composable("profile") { ProfileScreen(navController) }
-        composable("signup") { SignupScreen(navController) }
-        composable("login") { LoginScreen(navController) }
+fun UserSelectionScreen(navController: NavController) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center
+    ) {
+        Button(onClick = { navController.navigate("loginCustomer") }) {
+            Text("Soy Customer")
+        }
+        Button(onClick = { navController.navigate("loginSeller") }) {
+            Text("Soy Seller")
+        }
     }
 }
 
 @Composable
-fun LoginScreen(navController: NavController, authViewModel: SignupViewModel = viewModel()) {
+fun App() {
+    val navController = rememberNavController()
+    NavHost(navController = navController, startDestination = "userSelection") {
+        composable("userSelection") { UserSelectionScreen(navController) }
+        composable("loginCustomer") { LoginScreen(navController, userType = "Customer") }
+        composable("loginSeller") { LoginScreen(navController, userType = "Seller") }
+        composable("profile") { ProfileScreen(navController) }
+        composable("signup") { SignupScreen(navController) }
+    }
+}
+
+@Composable
+fun LoginScreen(
+    navController: NavController,
+    userType: String,  // Se añade el parámetro para diferenciar entre Customer y Seller
+    authViewModel: SignupViewModel = viewModel()
+) {
     val authState by authViewModel.authState.observeAsState()
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
     Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
+        Text(text = "Iniciar sesión como $userType")  // Mostrar el tipo de usuario
         TextField(value = email, onValueChange = { email = it })
         TextField(
             value = password,
             onValueChange = { password = it },
             visualTransformation = PasswordVisualTransformation()
         )
-        if(authState == 1){
+        if (authState == 1) {
             CircularProgressIndicator()
-        }else if(authState == 2){
-            Text(text = "Hubo un error, que no podemos ver todavia")
-        }else if (authState == 3){
+        } else if (authState == 2) {
+            Text(text = "Hubo un error, que no podemos ver todavía")
+        } else if (authState == 3) {
             navController.navigate("profile")
         }
-        
+
         Button(onClick = {
             authViewModel.signin(email, password)
         }) {
-            Text(text = "Iniciar sesion")
+            Text(text = "Iniciar sesión")
         }
     }
 }
