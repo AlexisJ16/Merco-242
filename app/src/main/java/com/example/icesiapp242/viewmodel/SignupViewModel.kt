@@ -1,5 +1,7 @@
 package com.example.icesiapp242.viewmodel
 
+import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,7 +15,7 @@ import kotlinx.coroutines.withContext
 
 //Hilt
 class SignupViewModel(
-    val repo: AuthRepository = AuthRepositoryImpl()
+    private val repo: AuthRepository = AuthRepositoryImpl()
 ) : ViewModel() {
 
     val authState = MutableLiveData(0)
@@ -25,18 +27,22 @@ class SignupViewModel(
     fun signup(user: User, password: String) {
         viewModelScope.launch(Dispatchers.IO) {
             withContext(Dispatchers.Main) { authState.value = 1 }
+            /*
             try {
                 repo.signup(user, password)
                 withContext(Dispatchers.Main) { authState.value = 3 }
             } catch (ex: FirebaseAuthException) {
                 withContext(Dispatchers.Main) { authState.value = 2 }
                 ex.printStackTrace()
-            }
+            }*/
         }
     }
 
+
+
     fun signin(email: String, password: String) {
         viewModelScope.launch(Dispatchers.IO) {
+            /*
             try {
                 withContext(Dispatchers.Main) { authState.value = 1 }
                 repo.signin(email, password)
@@ -44,8 +50,8 @@ class SignupViewModel(
             }catch (ex:FirebaseAuthException){
                 withContext(Dispatchers.Main) { authState.value = 2 }
                 ex.printStackTrace()
-            }
+            }*/
         }
     }
-
 }
+

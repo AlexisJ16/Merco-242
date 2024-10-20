@@ -11,7 +11,7 @@ android {
     defaultConfig {
         applicationId = "com.example.icesiapp242"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 34  
         versionCode = 1
         versionName = "1.0"
 
@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.messaging)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
