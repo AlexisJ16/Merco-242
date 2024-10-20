@@ -1,0 +1,113 @@
+{
+  "project_info": {
+    "project_number": "612300733454",
+    "firebase_url": "https://facelogprueba.firebaseio.com",
+    "project_id": "facelogprueba",
+    "storage_bucket": "facelogprueba.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:612300733454:android:bbaf36d181ab4544f9505f",
+        "android_client_info": {
+          "package_name": "com.example.icesiapp242"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJRQL69gQ_Rd3xyxef3Bvb-X85U3gJBRg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "612300733454-hqv4kjlu8udnppavthfprb8k5eamjnsj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "612300733454-rsvj9nta4h2jpt0cr70nmdjeq3gq1gq0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "icesi.edu.co.blocapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:612300733454:android:604347edbd0fe919f9505f",
+        "android_client_info": {
+          "package_name": "com.example.testclase9"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "612300733454-7jv3l8qgr2tvag9iud11pffqjb7b8gcn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.testclase9",
+            "certificate_hash": "0cb7f210b0e9c41d7c4df89a19c28452963bc08b"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJRQL69gQ_Rd3xyxef3Bvb-X85U3gJBRg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "612300733454-hqv4kjlu8udnppavthfprb8k5eamjnsj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "612300733454-rsvj9nta4h2jpt0cr70nmdjeq3gq1gq0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "icesi.edu.co.blocapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:612300733454:android:14a340efdaa0f456f9505f",
+        "android_client_info": {
+          "package_name": "icesi.edu.co.icesiapp241"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJRQL69gQ_Rd3xyxef3Bvb-X85U3gJBRg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "612300733454-hqv4kjlu8udnppavthfprb8k5eamjnsj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "612300733454-rsvj9nta4h2jpt0cr70nmdjeq3gq1gq0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "icesi.edu.co.blocapp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
