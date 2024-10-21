@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Merco242"
+rootProject.name = "Merco-242"
 include(":app")
  

@@ -4,13 +4,8 @@ import android.util.Log
 import com.example.merco242.domain.model.User
 import com.example.merco242.service.AuthService
 import com.example.merco242.service.AuthServiceImpl
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthException
-import com.google.firebase.auth.auth
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.tasks.await
 
 interface AuthRepository {
     suspend fun signup(user:User, password:String)
