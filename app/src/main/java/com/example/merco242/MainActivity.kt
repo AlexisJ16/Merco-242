@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -103,6 +105,29 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
+fun AppNavigation() {
+    val navController = rememberNavController()
+
+    // Aquí definimos el NavHost y las rutas de navegación
+    NavHost(navController = navController, startDestination = "login_screen") {
+        // Pantalla de inicio de sesión
+        composable("login_screen") {
+            LoginScreen(navController)
+        }
+
+        // Pantalla para compradores
+        composable("comprador_screen") {
+            CompradorScreen()
+        }
+
+        // Pantalla para vendedores
+        composable("vendedor_screen") {
+            VendedorScreen()
+        }
+    }
+}
+
+@Composable
 fun App() {
     val navController = rememberNavController()
     /* NavHost(navController = navController, startDestination = "profile") {
@@ -117,19 +142,19 @@ fun App() {
         composable("login") { LoginScreen(navController) }
     }
 }
+
+
 @Composable
 fun SignupScreen(navController: NavController, signupViewModel: SignupViewModel = viewModel()) {
 
     val authState by signupViewModel.authState.observeAsState()
 
-    // Declarar las variables para los nuevos campos
     var name by remember { mutableStateOf("") }
     var lastname by remember { mutableStateOf("") }
     var celphone by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
-    var context = LocalContext.current
+    var selectedUserType by remember { mutableStateOf("comprador") }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { paddingValues ->
         Column(
@@ -138,7 +163,7 @@ fun SignupScreen(navController: NavController, signupViewModel: SignupViewModel 
                 .padding(16.dp)
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally // Centramos horizontalmente
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = "Registrarse",
@@ -146,129 +171,40 @@ fun SignupScreen(navController: NavController, signupViewModel: SignupViewModel 
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            // Campo para el nombre
-            TextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Nombre") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            )
+            // Campos de registro
+            TextField(value = name, onValueChange = { name = it }, label = { Text("Nombre") })
+            TextField(value = lastname, onValueChange = { lastname = it }, label = { Text("Apellido") })
+            TextField(value = celphone, onValueChange = { celphone = it }, label = { Text("Celular") })
+            TextField(value = email, onValueChange = { email = it }, label = { Text("Email") })
+            TextField(value = password, onValueChange = { password = it }, label = { Text("Contraseña") }, visualTransformation = PasswordVisualTransformation())
 
-            // Campo para el apellido
-            TextField(
-                value = lastname,
-                onValueChange = { lastname = it },
-                label = { Text("Apellido") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            )
-
-            // Campo para el número de celular
-            TextField(
-                value = celphone,
-                onValueChange = { celphone = it },
-                label = { Text("Celular") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone), // Solo números
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            )
-
-            // Campo para el correo electrónico
-            TextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email), // Teclado de email
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            )
-
-            // Campo para la contraseña
-            TextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Contraseña") },
-                visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            )
-            Log.e("Autenticacion ",authState.toString())
-            // Mostrar estado de autenticación
-            if (authState == 1) {
-                CircularProgressIndicator()
-            } else if (authState == 2) {
-                Text("HUBO ERROR", color = Color.Red)
-            } else if (authState == 3) {
-                navController.navigate("profile")
+            // Botones para seleccionar tipo de usuario
+            Row(horizontalArrangement = Arrangement.SpaceEvenly) {
+                Button(onClick = { selectedUserType = "comprador" }) {
+                    Text(text = "Comprador")
+                }
+                Button(onClick = { selectedUserType = "vendedor" }) {
+                    Text(text = "Vendedor")
+                }
             }
 
             // Botón de registro
-            Button(
-                onClick = {
-                    signupViewModel.signup(
-                        User("", name, lastname, celphone, email),
-                        password
-                    )
-                },
-
-                modifier = Modifier
-                    .padding(top = 24.dp)
-                    .fillMaxWidth()
-                    .height(50.dp), // Ajustar tamaño del botón
-                shape = RoundedCornerShape(24.dp) // Esquinas redondeadas
-            ) {
-                Text(text = "Regístrate", color = Color.White)
+            Button(onClick = {
+                signupViewModel.signup(User("", name, lastname, celphone, email), password, selectedUserType)
+            }) {
+                Text(text = "Regístrate")
             }
 
-            // Opción para iniciar sesión si ya tiene cuenta
-            TextButton(
-                onClick = { /* Navegar a la pantalla de login */ },
-                modifier = Modifier.padding(top = 16.dp)
-            ) {
-                Text(text = "¿Ya tienes una cuenta?", color = Color.Gray)
-            }
-
-            // Sección para registrar con Google o Facebook
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 32.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text("O regístrate con una cuenta de:")
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                /*
-                IconButton(onClick = { /* Registro con Google */ }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_google),
-                        contentDescription = "Google",
-                        tint = Color.Unspecified // Para usar el color original
-                    )
-                }
-                IconButton(onClick = { /* Registro con Facebook */ }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_facebook),
-                        contentDescription = "Facebook",
-                        tint = Color.Unspecified
-                    )
-                }*/
+            // Mostrar estado de autenticación
+            when (authState) {
+                1 -> CircularProgressIndicator()
+                2 -> Text(text = "Hubo un error", color = Color.Red)
+                3 -> navController.navigate("profile")
             }
         }
     }
 }
+
 
 
 @Composable
@@ -277,29 +213,77 @@ fun LoginScreen(navController: NavController, authViewModel: SignupViewModel = v
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var selectedUserType by remember { mutableStateOf("comprador") }
 
-    Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
-        TextField(value = email, onValueChange = { email = it })
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Título de la pantalla
+        Text(
+            text = "Inicio de sesión",
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.padding(bottom = 24.dp)
+        )
+
+        // Campo para el correo
+        TextField(value = email, onValueChange = { email = it }, label = { Text("Email") })
+
+        // Campo para la contraseña
         TextField(
             value = password,
             onValueChange = { password = it },
+            label = { Text("Contraseña") },
             visualTransformation = PasswordVisualTransformation()
         )
-        if(authState == 1){
-            CircularProgressIndicator()
-        }else if(authState == 2){
-            Text(text = "Hubo un error, que no podemos ver todavia")
-        }else if (authState == 3){
-            navController.navigate("profile")
+
+        // Botones para seleccionar el tipo de usuario
+        Row(
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier.padding(vertical = 16.dp)
+        ) {
+            Button(onClick = {
+                selectedUserType = "comprador"
+                authViewModel.signinWithUserType(email, password, selectedUserType)
+            }) {
+                Text(text = "Comprador")
+            }
+            Button(onClick = {
+                selectedUserType = "vendedor"
+                authViewModel.signinWithUserType(email, password, selectedUserType)
+            }) {
+                Text(text = "Vendedor")
+            }
         }
 
-        Button(onClick = {
-            authViewModel.signin(email, password)
-        }) {
-            Text(text = "Iniciar sesion")
+        // Mostrar estado de autenticación
+        when (authState) {
+            1 -> CircularProgressIndicator()
+            2 -> Text(text = "Hubo un error en la autenticación.", color = Color.Red)
+            3 -> {
+                if (selectedUserType == "comprador") {
+                    navController.navigate("comprador_dashboard")
+                } else {
+                    navController.navigate("vendedor_dashboard")
+                }
+            }
         }
+
+        // Línea de texto para el registro
+        Text(
+            text = "¿Nuevo en la app?, Regístrate aquí",
+            color = Color.Black,
+            textDecoration = TextDecoration.Underline,
+            modifier = Modifier.clickable {
+                navController.navigate("signup")
+            }
+        )
     }
 }
+
 
 @Composable
 fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewModel = viewModel()) {

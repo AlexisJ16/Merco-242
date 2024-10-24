@@ -18,62 +18,36 @@ class SignupViewModel(
 ) : ViewModel() {
 
     val authState = MutableLiveData(0)
-    val errorMessage = MutableLiveData<String?>() // Para mostrar errores al usuario
+    val errorMessage = MutableLiveData<String?>()
 
-    //0. Idle
-    //1. Loading
-    //2. Error
-    //3. Success
-
-    // Validar formato de email
-    fun isValidEmail(email: String): Boolean {
-        Log.e("SignupViewModel", "Validando email: $email")
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
-    }
-
-    fun signup(user: User, password: String) {
-        // Validar correo electrónico antes de proceder
-        if (!isValidEmail(user.email)) {
-            errorMessage.postValue("El correo electrónico tiene un formato incorrecto.")
-            authState.postValue(2) // Estado de error
-            Log.e("SignupViewModel", "Correo electrónico inválido")
-            return
-        }
-
+    fun signup(user: User, password: String, userType: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            withContext(Dispatchers.Main) { authState.value = 1 } // Estado cargando
+            withContext(Dispatchers.Main) { authState.value = 1 }
             try {
-                repo.signup(user, password)
-                withContext(Dispatchers.Main) { authState.value = 3 } // Estado éxito
+                repo.signup(user, password, userType)
+                withContext(Dispatchers.Main) { authState.value = 3 }
             } catch (ex: FirebaseAuthException) {
                 withContext(Dispatchers.Main) {
-                    authState.value = 2 // Estado error
-                    Log.e("SignupViewModel", "Error de autenticación: ${ex.message}")
-                    errorMessage.value = ex.message // Mostrar error de Firebase
+                    authState.value = 2
+                    errorMessage.value = ex.message
                 }
             }
         }
     }
 
-    fun signin(email: String, password: String) {
-        // Validar correo electrónico antes de proceder
-        if (!isValidEmail(email)) {
-            errorMessage.postValue("El correo electrónico tiene un formato incorrecto.")
-            authState.postValue(2) // Estado error
-            return
-        }
-
+    fun signinWithUserType(email: String, password: String, userType: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                withContext(Dispatchers.Main) { authState.value = 1 } // Estado cargando
-                repo.signin(email, password)
-                withContext(Dispatchers.Main) { authState.value = 3 } // Estado éxito
+                withContext(Dispatchers.Main) { authState.value = 1 }
+                repo.signin(email, password, userType)
+                withContext(Dispatchers.Main) { authState.value = 3 }
             } catch (ex: FirebaseAuthException) {
                 withContext(Dispatchers.Main) {
-                    authState.value = 2 // Estado error
-                    errorMessage.value = ex.message // Mostrar error de Firebase
+                    authState.value = 2
+                    errorMessage.value = ex.message
                 }
             }
         }
     }
 }
+
