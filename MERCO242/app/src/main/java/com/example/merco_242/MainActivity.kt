@@ -7,10 +7,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -26,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -95,31 +98,44 @@ fun LoginScreen(navController: NavController, authViewModel: SignupViewModel = v
 fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewModel = viewModel()) {
 
     val userState by profileViewModel.user.observeAsState()
-    Log.e(">>>", userState.toString())
-    val username by remember { mutableStateOf("") }
-
 
     LaunchedEffect(true) {
         profileViewModel.getCurrentUser()
     }
-    if(userState == null){
-        navController.navigate("login")
-    }else {
-        Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
-            Text(text = "Bienvenido ${userState?.name}")
 
+    if (userState == null) {
+        navController.navigate("login")
+    } else {
+        // Layout que mostrará la información del usuario
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Muestra los datos de usuario, revisando que no sean nulos
+            Text(text = "Bienvenido, ${userState?.name ?: "Usuario"}!", style = MaterialTheme.typography.headlineMedium)
+            Text(text = "Nombre de usuario: ${userState?.username ?: "No disponible"}")
+            Text(text = "Correo electrónico: ${userState?.email ?: "No disponible"}")
+
+            Spacer(modifier = Modifier.padding(vertical = 8.dp))
+
+            // Botones para funcionalidades adicionales
             Button(onClick = { profileViewModel.funcion1() }) {
-                Text(text = "Funcion 1")
+                Text(text = "Función 1")
             }
             Button(onClick = { profileViewModel.funcion2() }) {
-                Text(text = "Funcion 2")
+                Text(text = "Función 2")
             }
             Button(onClick = { profileViewModel.funcion3() }) {
-                Text(text = "Funcion 3")
+                Text(text = "Función 3")
             }
 
+            Spacer(modifier = Modifier.padding(vertical = 8.dp))
+
+            // Botón para cerrar sesión
             Button(onClick = {
-                Firebase.auth.signOut() //Corregir con lo que saben
+                Firebase.auth.signOut()
                 navController.navigate("login")
             }) {
                 Text(text = "Cerrar sesión")
