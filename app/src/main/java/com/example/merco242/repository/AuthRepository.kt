@@ -20,6 +20,7 @@ class AuthRepositoryImpl : AuthRepository {
             val result = auth.createUserWithEmailAndPassword(user.email, password).await()
             val userId = result.user?.uid ?: return Result.failure(Exception("Error creating user"))
 
+            // Guardamos los datos del usuario en Firestore sin la contraseña
             val userData = hashMapOf(
                 "name" to user.name,
                 "lastname" to user.lastname,
@@ -39,15 +40,19 @@ class AuthRepositoryImpl : AuthRepository {
 
     override suspend fun login(email: String, password: String, userType: String): Result<Boolean> {
         return try {
+            // Intentamos autenticarnos primero
             val result = auth.signInWithEmailAndPassword(email, password).await()
             val userId = result.user?.uid ?: return Result.failure(Exception("User not found"))
 
+            // Validamos si el usuario existe en la colección correspondiente
             val collectionName = if (userType == "buyer") "buyers" else "sellers"
             val userSnapshot = db.collection(collectionName).document(userId).get().await()
 
             if (userSnapshot.exists()) {
                 Result.success(true)
             } else {
+                // Si el usuario no está en la colección esperada, cerramos sesión
+                auth.signOut()
                 Result.failure(Exception("User type mismatch"))
             }
         } catch (e: Exception) {

@@ -23,8 +23,11 @@ class SignupViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             withContext(Dispatchers.Main) { authState.value = 1 }
             try {
-                authRepository.register(user, password, userType)
-                withContext(Dispatchers.Main) { authState.value = 3 }
+                val result = authRepository.register(user, password, userType)
+                withContext(Dispatchers.Main) {
+                    authState.value = if (result.isSuccess) 3 else 2
+                    errorMessage.value = result.exceptionOrNull()?.message
+                }
             } catch (ex: FirebaseAuthException) {
                 withContext(Dispatchers.Main) {
                     authState.value = 2
@@ -36,10 +39,13 @@ class SignupViewModel(
 
     fun loginUser(email: String, password: String, userType: String) {
         viewModelScope.launch(Dispatchers.IO) {
+            withContext(Dispatchers.Main) { authState.value = 1 }
             try {
-                withContext(Dispatchers.Main) { authState.value = 1 }
-                authRepository.login(email, password, userType)
-                withContext(Dispatchers.Main) { authState.value = 3 }
+                val result = authRepository.login(email, password, userType)
+                withContext(Dispatchers.Main) {
+                    authState.value = if (result.isSuccess) 3 else 2
+                    errorMessage.value = result.exceptionOrNull()?.message
+                }
             } catch (ex: FirebaseAuthException) {
                 withContext(Dispatchers.Main) {
                     authState.value = 2

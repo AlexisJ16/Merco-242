@@ -185,6 +185,7 @@ fun LoginScreen(navController: NavController, authViewModel: SignupViewModel = v
     }
 }
 
+
 @Composable
 fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewModel = viewModel()) {
     val userState by profileViewModel.user.observeAsState()
