@@ -1,39 +1,62 @@
 package com.example.merco242.repository
 
-import android.util.Log
 import com.example.merco242.domain.model.User
-import com.example.merco242.service.AuthService
-import com.example.merco242.service.AuthServiceImpl
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 interface AuthRepository {
-    suspend fun signup(user:User, password:String)
-    suspend fun signin(email:String, password:String)
+    suspend fun register(user: User, password: String, userType: String): Result<Boolean>
+    suspend fun login(email: String, password: String, userType: String): Result<Boolean>
 }
 
-class AuthRepositoryImpl(
-    val authService: AuthService = AuthServiceImpl(),
-    val userRepository: UserRepository = UserRepositoryImpl()
-) : AuthRepository{
-    override suspend fun signup(user: User, password: String) {
-        //1. Registro en modulo de autenticación
-        authService.createUser(user.email, password)
-        Log.e("AuthRepositoryImpl", "Usuario registrado con éxito")
-        //2. Obtenemos el UID
-        val uid = Firebase.auth.currentUser?.uid
-        Log.v("AuthRepositoryImpl", "UID: $uid")
-        //3. Crear el usuario en Firestore
-        uid?.let {
-            user.id = it
-            Log.e("AuthRepositoryImpl   USEDID", user.id)
-            userRepository.createUser(user)
+class AuthRepositoryImpl : AuthRepository {
+
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+
+    override suspend fun register(user: User, password: String, userType: String): Result<Boolean> {
+        return try {
+            val result = auth.createUserWithEmailAndPassword(user.email, password).await()
+            val userId = result.user?.uid ?: return Result.failure(Exception("Error creating user"))
+
+            // Guardamos los datos del usuario en Firestore sin la contraseña
+            val userData = hashMapOf(
+                "name" to user.name,
+                "lastname" to user.lastname,
+                "celphone" to user.celphone,
+                "email" to user.email,
+                "type" to userType
+            )
+
+            val collectionName = if (userType == "buyer") "buyers" else "sellers"
+            db.collection(collectionName).document(userId).set(userData).await()
+
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
-        Log.e("AuthRepositoryImpl", "Usuario registrado con éxito")
     }
 
-    override suspend fun signin(email: String, password: String) {
-        authService.loginWithEmailAndPassword(email, password)
+    override suspend fun login(email: String, password: String, userType: String): Result<Boolean> {
+        return try {
+            // Intentamos autenticarnos primero
+            val result = auth.signInWithEmailAndPassword(email, password).await()
+            val userId = result.user?.uid ?: return Result.failure(Exception("User not found"))
+
+            // Validamos si el usuario existe en la colección correspondiente
+            val collectionName = if (userType == "buyer") "buyers" else "sellers"
+            val userSnapshot = db.collection(collectionName).document(userId).get().await()
+
+            if (userSnapshot.exists()) {
+                Result.success(true)
+            } else {
+                // Si el usuario no está en la colección esperada, cerramos sesión
+                auth.signOut()
+                Result.failure(Exception("User type mismatch"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }
-

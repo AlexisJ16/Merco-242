@@ -1,6 +1,5 @@
 package com.example.merco242.viewmodel
 
-
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,64 +13,43 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class SignupViewModel(
-    private val repo: AuthRepository = AuthRepositoryImpl()
+    private val authRepository: AuthRepository = AuthRepositoryImpl()
 ) : ViewModel() {
 
     val authState = MutableLiveData(0)
-    val errorMessage = MutableLiveData<String?>() // Para mostrar errores al usuario
+    val errorMessage = MutableLiveData<String?>()
 
-    //0. Idle
-    //1. Loading
-    //2. Error
-    //3. Success
-
-    // Validar formato de email
-    fun isValidEmail(email: String): Boolean {
-        Log.e("SignupViewModel", "Validando email: $email")
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
-    }
-
-    fun signup(user: User, password: String) {
-        // Validar correo electrónico antes de proceder
-        if (!isValidEmail(user.email)) {
-            errorMessage.postValue("El correo electrónico tiene un formato incorrecto.")
-            authState.postValue(2) // Estado de error
-            Log.e("SignupViewModel", "Correo electrónico inválido")
-            return
-        }
-
+    fun registerUser(user: User, password: String, userType: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            withContext(Dispatchers.Main) { authState.value = 1 } // Estado cargando
+            withContext(Dispatchers.Main) { authState.value = 1 }
             try {
-                repo.signup(user, password)
-                withContext(Dispatchers.Main) { authState.value = 3 } // Estado éxito
+                val result = authRepository.register(user, password, userType)
+                withContext(Dispatchers.Main) {
+                    authState.value = if (result.isSuccess) 3 else 2
+                    errorMessage.value = result.exceptionOrNull()?.message
+                }
             } catch (ex: FirebaseAuthException) {
                 withContext(Dispatchers.Main) {
-                    authState.value = 2 // Estado error
-                    Log.e("SignupViewModel", "Error de autenticación: ${ex.message}")
-                    errorMessage.value = ex.message // Mostrar error de Firebase
+                    authState.value = 2
+                    errorMessage.value = ex.message
                 }
             }
         }
     }
 
-    fun signin(email: String, password: String) {
-        // Validar correo electrónico antes de proceder
-        if (!isValidEmail(email)) {
-            errorMessage.postValue("El correo electrónico tiene un formato incorrecto.")
-            authState.postValue(2) // Estado error
-            return
-        }
-
+    fun loginUser(email: String, password: String, userType: String) {
         viewModelScope.launch(Dispatchers.IO) {
+            withContext(Dispatchers.Main) { authState.value = 1 }
             try {
-                withContext(Dispatchers.Main) { authState.value = 1 } // Estado cargando
-                repo.signin(email, password)
-                withContext(Dispatchers.Main) { authState.value = 3 } // Estado éxito
+                val result = authRepository.login(email, password, userType)
+                withContext(Dispatchers.Main) {
+                    authState.value = if (result.isSuccess) 3 else 2
+                    errorMessage.value = result.exceptionOrNull()?.message
+                }
             } catch (ex: FirebaseAuthException) {
                 withContext(Dispatchers.Main) {
-                    authState.value = 2 // Estado error
-                    errorMessage.value = ex.message // Mostrar error de Firebase
+                    authState.value = 2
+                    errorMessage.value = ex.message
                 }
             }
         }
