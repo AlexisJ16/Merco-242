@@ -1,13 +1,12 @@
 package com.example.merco242.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.merco242.domain.model.User
 import com.example.merco242.repository.AuthRepository
 import com.example.merco242.repository.AuthRepositoryImpl
-import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -22,17 +21,10 @@ class SignupViewModel(
     fun registerUser(user: User, password: String, userType: String) {
         viewModelScope.launch(Dispatchers.IO) {
             withContext(Dispatchers.Main) { authState.value = 1 }
-            try {
-                val result = authRepository.register(user, password, userType)
-                withContext(Dispatchers.Main) {
-                    authState.value = if (result.isSuccess) 3 else 2
-                    errorMessage.value = result.exceptionOrNull()?.message
-                }
-            } catch (ex: FirebaseAuthException) {
-                withContext(Dispatchers.Main) {
-                    authState.value = 2
-                    errorMessage.value = ex.message
-                }
+            val result = authRepository.register(user, password, userType)
+            withContext(Dispatchers.Main) {
+                authState.value = if (result.isSuccess) 3 else 2
+                errorMessage.value = result.exceptionOrNull()?.message
             }
         }
     }
@@ -40,18 +32,16 @@ class SignupViewModel(
     fun loginUser(email: String, password: String, userType: String) {
         viewModelScope.launch(Dispatchers.IO) {
             withContext(Dispatchers.Main) { authState.value = 1 }
-            try {
-                val result = authRepository.login(email, password, userType)
-                withContext(Dispatchers.Main) {
-                    authState.value = if (result.isSuccess) 3 else 2
-                    errorMessage.value = result.exceptionOrNull()?.message
-                }
-            } catch (ex: FirebaseAuthException) {
-                withContext(Dispatchers.Main) {
-                    authState.value = 2
-                    errorMessage.value = ex.message
-                }
+            val result = authRepository.login(email, password, userType)
+            withContext(Dispatchers.Main) {
+                authState.value = if (result.isSuccess) 3 else 2
+                errorMessage.value = result.exceptionOrNull()?.message
             }
         }
+    }
+
+    // Método para actualizar el estado de autenticación de Google
+    fun updateAuthState(user: FirebaseUser?) {
+        authState.value = if (user != null) 3 else 2
     }
 }
