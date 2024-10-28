@@ -64,6 +64,12 @@ dependencies {
     implementation("com.google.android.gms:play-services-auth:20.6.0")
     implementation("com.google.android.gms:play-services-base:18.2.0")
 
+    implementation("com.google.android.gms:play-services-auth:20.1.0")
+    implementation("com.google.firebase:firebase-auth-ktx")
+
+    implementation(libs.com.google.android.gms.play.services.auth)
+    implementation(libs.com.google.firebase.firebase.auth.ktx2)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
