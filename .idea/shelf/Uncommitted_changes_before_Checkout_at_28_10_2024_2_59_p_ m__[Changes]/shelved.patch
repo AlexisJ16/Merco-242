@@ -1,0 +1,155 @@
+Index: app/src/main/java/com/example/merco242/MainActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.merco242\r\n\r\n\r\nimport android.os.Bundle\r\nimport android.util.Log\r\nimport android.widget.Toast\r\nimport androidx.activity.ComponentActivity\r\nimport androidx.activity.compose.setContent\r\nimport androidx.activity.enableEdgeToEdge\r\nimport androidx.activity.viewModels\r\nimport androidx.compose.foundation.clickable\r\nimport androidx.compose.foundation.layout.Arrangement\r\nimport androidx.compose.foundation.layout.Column\r\nimport androidx.compose.foundation.layout.Row\r\nimport androidx.compose.foundation.layout.Spacer\r\nimport androidx.compose.foundation.layout.fillMaxSize\r\nimport androidx.compose.foundation.layout.fillMaxWidth\r\nimport androidx.compose.foundation.layout.height\r\nimport androidx.compose.foundation.layout.padding\r\nimport androidx.compose.foundation.shape.RoundedCornerShape\r\nimport androidx.compose.foundation.text.KeyboardOptions\r\nimport androidx.compose.material3.Button\r\nimport androidx.compose.material3.CircularProgressIndicator\r\nimport androidx.compose.material3.MaterialTheme\r\nimport androidx.compose.material3.Scaffold\r\nimport androidx.compose.material3.Text\r\nimport androidx.compose.material3.TextButton\r\nimport androidx.compose.material3.TextField\r\nimport androidx.compose.runtime.Composable\r\nimport androidx.compose.runtime.LaunchedEffect\r\nimport androidx.compose.runtime.getValue\r\nimport androidx.compose.runtime.livedata.observeAsState\r\nimport androidx.compose.runtime.mutableStateOf\r\nimport androidx.compose.runtime.remember\r\nimport androidx.compose.runtime.setValue\r\nimport androidx.compose.ui.Alignment\r\nimport androidx.compose.ui.Modifier\r\nimport androidx.compose.ui.graphics.Color\r\nimport androidx.compose.ui.platform.LocalContext\r\nimport androidx.compose.ui.text.font.FontWeight\r\nimport androidx.compose.ui.text.input.KeyboardType\r\nimport androidx.compose.ui.text.input.PasswordVisualTransformation\r\nimport androidx.compose.ui.text.style.TextDecoration\r\nimport androidx.compose.ui.tooling.preview.Preview\r\nimport androidx.compose.ui.unit.dp\r\nimport androidx.compose.ui.unit.sp\r\nimport androidx.lifecycle.viewmodel.compose.viewModel\r\nimport androidx.navigation.NavController\r\nimport androidx.navigation.compose.NavHost\r\nimport androidx.navigation.compose.composable\r\nimport androidx.navigation.compose.rememberNavController\r\nimport com.example.merco242.domain.model.User\r\nimport com.example.merco242.ui.theme.Merco242Theme\r\n//import com.example.merco242.ui.theme.White\r\nimport com.example.merco242.viewmodel.ProfileViewModel\r\nimport com.example.merco242.viewmodel.SignupViewModel\r\nimport com.google.firebase.auth.ktx.auth\r\nimport com.google.firebase.ktx.Firebase\r\n\r\n/*class MainActivity : ComponentActivity() {\r\n    override fun onCreate(savedInstanceState: Bundle?) {\r\n        super.onCreate(savedInstanceState)\r\n        enableEdgeToEdge()\r\n        setContent {\r\n            Merco242Theme   {\r\n                App()\r\n            }\r\n        }\r\n    }\r\n */\r\nclass MainActivity : ComponentActivity() {\r\n\r\n    private val signupViewModel: SignupViewModel by viewModels()\r\n\r\n    override fun onCreate(savedInstanceState: Bundle?) {\r\n        super.onCreate(savedInstanceState)\r\n\r\n        // Observar el authState y mostrar mensajes de error o manejar navegación\r\n        signupViewModel.authState.observe(this) { authState ->\r\n            when (authState) {\r\n                1 -> {\r\n                    // Mostrar progreso en MainActivity o delegar en el Composable\r\n                }\r\n                2 -> {\r\n                    // Mostrar un mensaje de error o manejarlo de alguna forma\r\n                    Toast.makeText(this, \"Error de autenticación\", Toast.LENGTH_SHORT).show()\r\n                }\r\n                3 -> {\r\n                    // Navegar a otra pantalla (por ejemplo, Profile) si la autenticación fue exitosa\r\n                }\r\n            }\r\n        }\r\n\r\n        signupViewModel.errorMessage.observe(this) { errorMessage ->\r\n            // Mostrar el mensaje de error si existe\r\n            errorMessage?.let {\r\n                Toast.makeText(this, it, Toast.LENGTH_SHORT).show()\r\n            }\r\n        }\r\n\r\n        enableEdgeToEdge()\r\n        setContent {\r\n            Merco242Theme {\r\n                App()\r\n            }\r\n        }\r\n    }\r\n}\r\n\r\n\r\n\r\n@Composable\r\nfun App() {\r\n    val navController = rememberNavController()\r\n\r\n    NavHost(navController = navController, startDestination = \"login\") {\r\n        composable(\"profile\") { ProfileScreen(navController) }\r\n        composable(\"signup\") { SignupScreen(navController) }\r\n        composable(\"login\") { LoginScreen(navController) }\r\n        composable(\"comprador_dashboard\") { CompradorDashboard(navController) }\r\n        composable(\"vendedor_dashboard\") { VendedorDashboard(navController) }\r\n    }\r\n\r\n}\r\n\r\n\r\n@Composable\r\nfun SignupScreen(navController: NavController, signupViewModel: SignupViewModel = viewModel()) {\r\n    val authState by signupViewModel.authState.observeAsState()\r\n    var name by remember { mutableStateOf(\"\") }\r\n    var lastname by remember { mutableStateOf(\"\") }\r\n    var celphone by remember { mutableStateOf(\"\") }\r\n    var email by remember { mutableStateOf(\"\") }\r\n    var password by remember { mutableStateOf(\"\") }\r\n    var selectedUserType by remember { mutableStateOf(\"comprador\") }\r\n\r\n    Column(\r\n        modifier = Modifier.fillMaxSize().padding(16.dp),\r\n        verticalArrangement = Arrangement.Center,\r\n        horizontalAlignment = Alignment.CenterHorizontally\r\n    ) {\r\n        Text(text = \"Registrarse\", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(bottom = 24.dp))\r\n\r\n        // Campos de registro\r\n        TextField(value = name, onValueChange = { name = it }, label = { Text(\"Nombre\") })\r\n        TextField(value = lastname, onValueChange = { lastname = it }, label = { Text(\"Apellido\") })\r\n        TextField(value = celphone, onValueChange = { celphone = it }, label = { Text(\"Celular\") })\r\n        TextField(value = email, onValueChange = { email = it }, label = { Text(\"Email\") })\r\n        TextField(value = password, onValueChange = { password = it }, label = { Text(\"Contraseña\") }, visualTransformation = PasswordVisualTransformation())\r\n\r\n        // Botones de tipo de usuario\r\n        Row(horizontalArrangement = Arrangement.SpaceEvenly) {\r\n            Button(onClick = { selectedUserType = \"comprador\" }) { Text(text = \"Comprador\") }\r\n            Button(onClick = { selectedUserType = \"vendedor\" }) { Text(text = \"Vendedor\") }\r\n        }\r\n\r\n        // Botón de registro\r\n        Button(onClick = {\r\n            signupViewModel.signup(User(\"\", name, lastname, celphone, email), password, selectedUserType)\r\n        }) { Text(text = \"Regístrate\") }\r\n\r\n        // Mostrar estado de autenticación\r\n        when (authState) {\r\n            1 -> CircularProgressIndicator()\r\n            2 -> Text(text = \"Hubo un error\", color = Color.Red)\r\n            3 -> navController.navigate(\"profile\")\r\n        }\r\n    }\r\n}\r\n\r\n\r\n\r\n\r\n@Composable\r\nfun LoginScreen(navController: NavController, authViewModel: SignupViewModel = viewModel()) {\r\n    val authState by authViewModel.authState.observeAsState()\r\n    val errorMessage by authViewModel.errorMessage.observeAsState()\r\n\r\n    var email by remember { mutableStateOf(\"\") }\r\n    var password by remember { mutableStateOf(\"\") }\r\n    var selectedUserType by remember { mutableStateOf(\"comprador\") }\r\n\r\n    Column(\r\n        modifier = Modifier\r\n            .fillMaxSize()\r\n            .padding(16.dp),\r\n        verticalArrangement = Arrangement.Center,\r\n        horizontalAlignment = Alignment.CenterHorizontally\r\n    ) {\r\n        Text(text = \"Inicio de sesión\", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(bottom = 24.dp))\r\n\r\n        // Campos de Email y Contraseña\r\n        TextField(value = email, onValueChange = { email = it }, label = { Text(\"Email\") })\r\n        TextField(value = password, onValueChange = { password = it }, label = { Text(\"Contraseña\") }, visualTransformation = PasswordVisualTransformation())\r\n\r\n        // Botones de tipo de usuario\r\n        Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.padding(vertical = 16.dp)) {\r\n            Button(onClick = { selectedUserType = \"comprador\" }) { Text(text = \"Comprador\") }\r\n            Button(onClick = { selectedUserType = \"vendedor\" }) { Text(text = \"Vendedor\") }\r\n        }\r\n\r\n        // Iniciar sesión\r\n        Button(onClick = {\r\n            authViewModel.signinWithUserType(email, password, selectedUserType)\r\n        }) { Text(text = \"Iniciar Sesión\") }\r\n\r\n        // Proceso de autenticación\r\n        when (authState) {\r\n            1 -> CircularProgressIndicator()\r\n            2 -> Text(text = errorMessage ?: \"Error de autenticación\", color = Color.Red)\r\n            3 -> {\r\n                if (selectedUserType == \"comprador\") {\r\n                    navController.navigate(\"comprador_dashboard\")\r\n                } else {\r\n                    navController.navigate(\"vendedor_dashboard\")\r\n                }\r\n            }\r\n        }\r\n\r\n        // Opción para registro\r\n        Text(\r\n            text = \"¿Nuevo en la app?, Regístrate aquí\",\r\n            color = Color.Black,\r\n            textDecoration = TextDecoration.Underline,\r\n            modifier = Modifier.clickable { navController.navigate(\"signup\") }\r\n        )\r\n    }\r\n}\r\n\r\n\r\n\r\n@Composable\r\nfun ProfileScreen(navController: NavController, profileViewModel: ProfileViewModel = viewModel()) {\r\n\r\n    val userState by profileViewModel.user.observeAsState()\r\n    Log.e(\">>>\", userState.toString())\r\n    val username by remember { mutableStateOf(\"\") }\r\n\r\n\r\n    LaunchedEffect(true) {\r\n        profileViewModel.getCurrentUser()\r\n    }\r\n    if(userState == null){\r\n        navController.navigate(\"login\")\r\n    }else {\r\n        Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {\r\n            Text(text = \"Bienvenido ${userState?.name}\")\r\n\r\n            Button(onClick = { profileViewModel.funcion1() }) {\r\n                Text(text = \"Funcion 1\")\r\n            }\r\n            Button(onClick = { profileViewModel.funcion2() }) {\r\n                Text(text = \"Funcion 2\")\r\n            }\r\n            Button(onClick = { profileViewModel.funcion3() }) {\r\n                Text(text = \"Funcion 3\")\r\n            }\r\n\r\n            Button(onClick = {\r\n                Firebase.auth.signOut() //Corregir con lo que saben\r\n                navController.navigate(\"login\")\r\n            }) {\r\n                Text(text = \"Cerrar sesión\")\r\n            }\r\n        }\r\n    }\r\n}\r\n\r\n@Composable\r\nfun CompradorDashboard(navController: NavController) {\r\n    Column(\r\n        modifier = Modifier.fillMaxSize(),\r\n        verticalArrangement = Arrangement.Center,\r\n        horizontalAlignment = Alignment.CenterHorizontally\r\n    ) {\r\n        Text(text = \"Bienvenido Comprador\", style = MaterialTheme.typography.headlineSmall)\r\n\r\n        Button(onClick = {\r\n            Firebase.auth.signOut()\r\n            navController.navigate(\"login\")\r\n        }) {\r\n            Text(text = \"Cerrar sesión\")\r\n        }\r\n    }\r\n}\r\n\r\n@Composable\r\nfun VendedorDashboard(navController: NavController) {\r\n    Column(\r\n        modifier = Modifier.fillMaxSize(),\r\n        verticalArrangement = Arrangement.Center,\r\n        horizontalAlignment = Alignment.CenterHorizontally\r\n    ) {\r\n        Text(text = \"Bienvenido Vendedor\", style = MaterialTheme.typography.headlineSmall)\r\n\r\n        Button(onClick = {\r\n            Firebase.auth.signOut()\r\n            navController.navigate(\"login\")\r\n        }) {\r\n            Text(text = \"Cerrar sesión\")\r\n        }\r\n    }\r\n}\r\n\r\n\r\n\r\n@Composable\r\nfun Greeting(name: String, modifier: Modifier = Modifier) {\r\n    Text(\r\n        text = \"Hello $name!\",\r\n        modifier = modifier\r\n    )\r\n}\r\n\r\n@Preview(showBackground = true)\r\n@Composable\r\nfun GreetingPreview() {\r\n    Merco242Theme {\r\n        Greeting(\"Android\")\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/merco242/MainActivity.kt b/app/src/main/java/com/example/merco242/MainActivity.kt
+--- a/app/src/main/java/com/example/merco242/MainActivity.kt	
++++ b/app/src/main/java/com/example/merco242/MainActivity.kt	
+@@ -8,8 +8,10 @@
+ import androidx.activity.compose.setContent
+ import androidx.activity.enableEdgeToEdge
+ import androidx.activity.viewModels
++import androidx.compose.foundation.background
+ import androidx.compose.foundation.clickable
+ import androidx.compose.foundation.layout.Arrangement
++import androidx.compose.foundation.layout.Box
+ import androidx.compose.foundation.layout.Column
+ import androidx.compose.foundation.layout.Row
+ import androidx.compose.foundation.layout.Spacer
+@@ -17,6 +19,7 @@
+ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.height
+ import androidx.compose.foundation.layout.padding
++import androidx.compose.foundation.layout.size
+ import androidx.compose.foundation.shape.RoundedCornerShape
+ import androidx.compose.foundation.text.KeyboardOptions
+ import androidx.compose.material3.Button
+@@ -243,12 +246,44 @@
+     if(userState == null){
+         navController.navigate("login")
+     }else {
+-        Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
+-            Text(text = "Bienvenido ${userState?.name}")
++        Column(
++            modifier = Modifier
++                .fillMaxSize()
++                .padding(16.dp),
++            verticalArrangement = Arrangement.Center,
++            horizontalAlignment = Alignment.CenterHorizontally
++        ) {
++            // Imagen de perfil simulada
++            Box(
++                modifier = Modifier
++                    .size(120.dp)
++                    .padding(bottom = 16.dp)
++                    .background(Color.Gray, shape = RoundedCornerShape(60.dp)),
++                contentAlignment = Alignment.Center
++            ) {
++                Text(
++                    text = userState?.name?.firstOrNull()?.uppercase() ?: "",
++                    fontSize = 48.sp,
++                    color = Color.White
++                )
++            }
++
++            Text(text = "Nombre: ${userState?.name}", style = MaterialTheme.typography.bodyLarge)
++            Spacer(modifier = Modifier.height(8.dp))
++            Text(text = "Celular: ${userState?.celphone}", style = MaterialTheme.typography.bodyLarge)
++            Spacer(modifier = Modifier.height(8.dp))
++            Text(text = "Email: ${userState?.email}", style = MaterialTheme.typography.bodyLarge)
++
++            Spacer(modifier = Modifier.height(32.dp))
+ 
+-            Button(onClick = { profileViewModel.funcion1() }) {
+-                Text(text = "Funcion 1")
++            // Botón para cerrar sesión
++            Button(onClick = {
++                Firebase.auth.signOut()
++                navController.navigate("login")
++            }) {
++                Text(text = "Cerrar sesión")
+             }
++
+             Button(onClick = { profileViewModel.funcion2() }) {
+                 Text(text = "Funcion 2")
+             }
+@@ -269,11 +304,30 @@
+ @Composable
+ fun CompradorDashboard(navController: NavController) {
+     Column(
+-        modifier = Modifier.fillMaxSize(),
++        modifier = Modifier
++            .fillMaxSize()
++            .padding(16.dp),
+         verticalArrangement = Arrangement.Center,
+         horizontalAlignment = Alignment.CenterHorizontally
+     ) {
+-        Text(text = "Bienvenido Comprador", style = MaterialTheme.typography.headlineSmall)
++        // Simulación de imagen de perfil
++        androidx.compose.foundation.Canvas(
++            modifier = Modifier
++                .size(100.dp)
++                .padding(16.dp),
++            onDraw = {
++                drawCircle(color = Color.Gray)
++            }
++        )
++
++        Spacer(modifier = Modifier.height(16.dp))
++
++        // Información del usuario
++        Text(text = "Bienvenido Comprador", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
++        Spacer(modifier = Modifier.height(8.dp))
++        Text(text = "Aquí podrás acceder a tus compras y gestionar tus preferencias", fontSize = 16.sp)
++
++        Spacer(modifier = Modifier.height(24.dp))
+ 
+         Button(onClick = {
+             Firebase.auth.signOut()
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AndroidLayouts\">\r\n    <shared>\r\n      <config />\r\n    </shared>\r\n  </component>\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"NONE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"8d04ae70-b842-4f31-bdda-016d182e0dcf\" name=\"Changes\" comment=\"\">\r\n      <change beforePath=\"$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.gradle/config.properties\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.gradle/config.properties\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.gradle/file-system.probe\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.gradle/file-system.probe\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/other.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/other.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/local.properties\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/local.properties\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"ClangdSettings\">\r\n    <option name=\"formatViaClangd\" value=\"false\" />\r\n  </component>\r\n  <component name=\"ExecutionTargetManager\" SELECTED_TARGET=\"device_and_snapshot_combo_box_target[DeviceId(pluginId=PhysicalDevice, isTemplate=false, identifier=serial=haivmnbiizw8zxdm)]\" />\r\n  <component name=\"ExternalProjectsData\">\r\n    <projectState path=\"$PROJECT_DIR$\">\r\n      <ProjectState />\r\n    </projectState>\r\n  </component>\r\n  <component name=\"ExternalProjectsManager\">\r\n    <system id=\"GRADLE\">\r\n      <state>\r\n        <task path=\"$PROJECT_DIR$/app\">\r\n          <activation />\r\n        </task>\r\n        <projects_view>\r\n          <tree_state>\r\n            <expand>\r\n              <path>\r\n                <item name=\"\" type=\"6a2764b6:ExternalProjectsStructure$RootNode\" />\r\n                <item name=\"Merco-242\" type=\"f1a62948:ProjectNode\" />\r\n              </path>\r\n              <path>\r\n                <item name=\"\" type=\"6a2764b6:ExternalProjectsStructure$RootNode\" />\r\n                <item name=\"Merco-242\" type=\"f1a62948:ProjectNode\" />\r\n                <item name=\"app\" type=\"2d1252cf:ModuleNode\" />\r\n              </path>\r\n              <path>\r\n                <item name=\"\" type=\"6a2764b6:ExternalProjectsStructure$RootNode\" />\r\n                <item name=\"Merco-242\" type=\"f1a62948:ProjectNode\" />\r\n                <item name=\"app\" type=\"2d1252cf:ModuleNode\" />\r\n                <item name=\"Tasks\" type=\"e4a08cd1:TasksNode\" />\r\n              </path>\r\n              <path>\r\n                <item name=\"\" type=\"6a2764b6:ExternalProjectsStructure$RootNode\" />\r\n                <item name=\"Merco-242\" type=\"f1a62948:ProjectNode\" />\r\n                <item name=\"app\" type=\"2d1252cf:ModuleNode\" />\r\n                <item name=\"Tasks\" type=\"e4a08cd1:TasksNode\" />\r\n                <item name=\"other\" type=\"c8890929:TasksNode$1\" />\r\n              </path>\r\n            </expand>\r\n            <select />\r\n          </tree_state>\r\n        </projects_view>\r\n      </state>\r\n    </system>\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;associatedIndex&quot;: 2\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"2nj5ewLUSahqLXgO7LSw06MDlRT\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\"><![CDATA[{\r\n  \"keyToString\": {\r\n    \"Android App.app.executor\": \"Run\",\r\n    \"RunOnceActivity.ShowReadmeOnStart\": \"true\",\r\n    \"RunOnceActivity.cidr.known.project.marker\": \"true\",\r\n    \"RunOnceActivity.readMode.enableVisualFormatting\": \"true\",\r\n    \"cf.first.check.clang-format\": \"false\",\r\n    \"cidr.known.project.marker\": \"true\",\r\n    \"git-widget-placeholder\": \"Andy__Branch\",\r\n    \"ignore.virus.scanning.warn.message\": \"true\",\r\n    \"kotlin-language-version-configured\": \"true\",\r\n    \"last_opened_file_path\": \"C:/Users/andy0/AndroidStudioProjects/Merco-242/MERCO242\",\r\n    \"project.structure.last.edited\": \"Modules\",\r\n    \"project.structure.proportion\": \"0.17\",\r\n    \"project.structure.side.proportion\": \"0.2\"\r\n  },\r\n  \"keyToStringList\": {\r\n    \"kotlin-gradle-user-dirs\": [\r\n      \"C:\\\\Users\\\\andy0\\\\.gradle\"\r\n    ]\r\n  }\r\n}]]></component>\r\n  <component name=\"RunManager\">\r\n    <configuration name=\"app\" type=\"AndroidRunConfigurationType\" factoryName=\"Android App\">\r\n      <module name=\"Merco-242.app.main\" />\r\n      <option name=\"DEPLOY\" value=\"true\" />\r\n      <option name=\"DEPLOY_APK_FROM_BUNDLE\" value=\"false\" />\r\n      <option name=\"DEPLOY_AS_INSTANT\" value=\"false\" />\r\n      <option name=\"ARTIFACT_NAME\" value=\"\" />\r\n      <option name=\"PM_INSTALL_OPTIONS\" value=\"\" />\r\n      <option name=\"ALL_USERS\" value=\"false\" />\r\n      <option name=\"ALWAYS_INSTALL_WITH_PM\" value=\"false\" />\r\n      <option name=\"CLEAR_APP_STORAGE\" value=\"false\" />\r\n      <option name=\"DYNAMIC_FEATURES_DISABLED_LIST\" value=\"\" />\r\n      <option name=\"ACTIVITY_EXTRA_FLAGS\" value=\"\" />\r\n      <option name=\"MODE\" value=\"default_activity\" />\r\n      <option name=\"CLEAR_LOGCAT\" value=\"false\" />\r\n      <option name=\"SHOW_LOGCAT_AUTOMATICALLY\" value=\"false\" />\r\n      <option name=\"TARGET_SELECTION_MODE\" value=\"DEVICE_AND_SNAPSHOT_COMBO_BOX\" />\r\n      <option name=\"SELECTED_CLOUD_MATRIX_CONFIGURATION_ID\" value=\"-1\" />\r\n      <option name=\"SELECTED_CLOUD_MATRIX_PROJECT_ID\" value=\"\" />\r\n      <option name=\"DEBUGGER_TYPE\" value=\"Auto\" />\r\n      <Auto>\r\n        <option name=\"USE_JAVA_AWARE_DEBUGGER\" value=\"false\" />\r\n        <option name=\"SHOW_STATIC_VARS\" value=\"true\" />\r\n        <option name=\"WORKING_DIR\" value=\"\" />\r\n        <option name=\"TARGET_LOGGING_CHANNELS\" value=\"lldb process:gdb-remote packets\" />\r\n        <option name=\"SHOW_OPTIMIZED_WARNING\" value=\"true\" />\r\n        <option name=\"ATTACH_ON_WAIT_FOR_DEBUGGER\" value=\"false\" />\r\n        <option name=\"DEBUG_SANDBOX_SDK\" value=\"false\" />\r\n      </Auto>\r\n      <Hybrid>\r\n        <option name=\"USE_JAVA_AWARE_DEBUGGER\" value=\"false\" />\r\n        <option name=\"SHOW_STATIC_VARS\" value=\"true\" />\r\n        <option name=\"WORKING_DIR\" value=\"\" />\r\n        <option name=\"TARGET_LOGGING_CHANNELS\" value=\"lldb process:gdb-remote packets\" />\r\n        <option name=\"SHOW_OPTIMIZED_WARNING\" value=\"true\" />\r\n        <option name=\"ATTACH_ON_WAIT_FOR_DEBUGGER\" value=\"false\" />\r\n        <option name=\"DEBUG_SANDBOX_SDK\" value=\"false\" />\r\n      </Hybrid>\r\n      <Java>\r\n        <option name=\"ATTACH_ON_WAIT_FOR_DEBUGGER\" value=\"false\" />\r\n        <option name=\"DEBUG_SANDBOX_SDK\" value=\"false\" />\r\n      </Java>\r\n      <Native>\r\n        <option name=\"USE_JAVA_AWARE_DEBUGGER\" value=\"false\" />\r\n        <option name=\"SHOW_STATIC_VARS\" value=\"true\" />\r\n        <option name=\"WORKING_DIR\" value=\"\" />\r\n        <option name=\"TARGET_LOGGING_CHANNELS\" value=\"lldb process:gdb-remote packets\" />\r\n        <option name=\"SHOW_OPTIMIZED_WARNING\" value=\"true\" />\r\n        <option name=\"ATTACH_ON_WAIT_FOR_DEBUGGER\" value=\"false\" />\r\n        <option name=\"DEBUG_SANDBOX_SDK\" value=\"false\" />\r\n      </Native>\r\n      <Profilers>\r\n        <option name=\"ADVANCED_PROFILING_ENABLED\" value=\"false\" />\r\n        <option name=\"STARTUP_PROFILING_ENABLED\" value=\"false\" />\r\n        <option name=\"STARTUP_CPU_PROFILING_ENABLED\" value=\"false\" />\r\n        <option name=\"STARTUP_CPU_PROFILING_CONFIGURATION_NAME\" value=\"Java/Kotlin Method Sample (legacy)\" />\r\n        <option name=\"STARTUP_NATIVE_MEMORY_PROFILING_ENABLED\" value=\"false\" />\r\n        <option name=\"NATIVE_MEMORY_SAMPLE_RATE_BYTES\" value=\"2048\" />\r\n      </Profilers>\r\n      <option name=\"DEEP_LINK\" value=\"\" />\r\n      <option name=\"ACTIVITY_CLASS\" value=\"\" />\r\n      <option name=\"SEARCH_ACTIVITY_IN_GLOBAL_SCOPE\" value=\"false\" />\r\n      <option name=\"SKIP_ACTIVITY_VALIDATION\" value=\"false\" />\r\n      <method v=\"2\">\r\n        <option name=\"Android.Gradle.BeforeRunTask\" enabled=\"true\" />\r\n      </method>\r\n    </configuration>\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"8d04ae70-b842-4f31-bdda-016d182e0dcf\" name=\"Changes\" comment=\"\" />\r\n      <created>1729473743779</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1729473743779</updated>\r\n    </task>\r\n    <servers />\r\n  </component>\r\n</project>
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	
++++ b/.idea/workspace.xml	
+@@ -10,12 +10,13 @@
+   </component>
+   <component name="ChangeListManager">
+     <list default="true" id="8d04ae70-b842-4f31-bdda-016d182e0dcf" name="Changes" comment="">
++      <change beforePath="$PROJECT_DIR$/.gradle/8.7/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.7/executionHistory/executionHistory.lock" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.gradle/8.7/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.7/fileHashes/fileHashes.bin" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.gradle/8.7/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.7/fileHashes/fileHashes.lock" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.gradle/8.7/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.7/fileHashes/resourceHashesCache.bin" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/.gradle/config.properties" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/config.properties" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/.idea/other.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/other.xml" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/local.properties" beforeDir="false" afterPath="$PROJECT_DIR$/local.properties" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/merco242/MainActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/merco242/MainActivity.kt" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -25,7 +26,7 @@
+   <component name="ClangdSettings">
+     <option name="formatViaClangd" value="false" />
+   </component>
+-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=PhysicalDevice, isTemplate=false, identifier=serial=haivmnbiizw8zxdm)]" />
++  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=C:\Users\andy0\.android\avd\Pixel_7_API_35.avd)]" />
+   <component name="ExternalProjectsData">
+     <projectState path="$PROJECT_DIR$">
+       <ProjectState />
+@@ -91,7 +92,7 @@
+     "git-widget-placeholder": "Andy__Branch",
+     "ignore.virus.scanning.warn.message": "true",
+     "kotlin-language-version-configured": "true",
+-    "last_opened_file_path": "C:/Users/andy0/AndroidStudioProjects/Merco-242/MERCO242",
++    "last_opened_file_path": "C:/Users/andy0/AndroidStudioProjects/AppIcesi242",
+     "project.structure.last.edited": "Modules",
+     "project.structure.proportion": "0.17",
+     "project.structure.side.proportion": "0.2"
