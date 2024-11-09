@@ -64,6 +64,12 @@ dependencies {
     implementation("com.google.android.gms:play-services-auth:20.6.0")
     implementation("com.google.android.gms:play-services-base:18.2.0")
 
+    implementation("com.google.android.gms:play-services-auth:20.1.0")
+    implementation("com.google.firebase:firebase-auth-ktx")
+
+    implementation(libs.com.google.android.gms.play.services.auth)
+    implementation(libs.com.google.firebase.firebase.auth.ktx2)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -79,6 +85,8 @@ dependencies {
     implementation(libs.androidx.datastore.core.android)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth)
+    implementation(libs.androidx.storage)
+    implementation(libs.firebase.crashlytics.buildtools)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
