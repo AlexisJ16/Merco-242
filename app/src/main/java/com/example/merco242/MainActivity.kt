@@ -11,7 +11,18 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+//noinspection UsingMaterialAndMaterial3Libraries
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -41,7 +52,6 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -120,6 +130,7 @@ fun App(onGoogleSignIn: () -> Unit) {
         composable("profile") { ProfileScreen(navController) }
         composable("buyer_dashboard") { BuyerDashboard(navController) }
         composable("seller_dashboard") { SellerDashboard(navController) }
+        composable("map_screen") { MapScreen() }
     }
 }
 
@@ -212,6 +223,13 @@ fun UserSelectionScreen(navController: NavController, onGoogleSignIn: () -> Unit
             }
         }
     }
+}
+
+@Composable
+fun MapScreen() {
+    // Implementación de Google Maps
+    // Aquí se mostraría el mapa con la ubicación de tiendas cercanas
+    Text(text = "Pantalla del mapa - Muestra tiendas cercanas aquí", modifier = Modifier.fillMaxSize())
 }
 
 @Composable
