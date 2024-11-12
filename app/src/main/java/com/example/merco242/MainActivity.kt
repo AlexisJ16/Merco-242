@@ -289,7 +289,15 @@ fun BuyerDashboard(navController: NavController, signupViewModel: SignupViewMode
     ) {
         Text(text = "Bienvenido Buyer", style = MaterialTheme.typography.headlineSmall)
 
-        Button(onClick = { signupViewModel.loadUserDetails(FirebaseAuth.getInstance().currentUser?.uid ?: "") }) {
+        Button(
+            onClick = {
+                val userId = FirebaseAuth.getInstance().currentUser?.uid
+                if (userId != null) {
+                    signupViewModel.loadUserDetails(userId) // Llamada para cargar detalles de usuario
+                }
+            },
+            modifier = Modifier.padding(vertical = 16.dp)
+        ) {
             Text(text = "Mostrar Resumen de Usuario")
         }
 
@@ -302,6 +310,7 @@ fun BuyerDashboard(navController: NavController, signupViewModel: SignupViewMode
     }
 }
 
+
 @Composable
 fun SellerDashboard(navController: NavController, signupViewModel: SignupViewModel) {
     val userDetails by signupViewModel.userDetails.observeAsState()
@@ -313,7 +322,15 @@ fun SellerDashboard(navController: NavController, signupViewModel: SignupViewMod
     ) {
         Text(text = "Bienvenido Seller", style = MaterialTheme.typography.headlineSmall)
 
-        Button(onClick = { signupViewModel.loadUserDetails(FirebaseAuth.getInstance().currentUser?.uid ?: "") }) {
+        Button(
+            onClick = {
+                val userId = FirebaseAuth.getInstance().currentUser?.uid
+                if (userId != null) {
+                    signupViewModel.loadUserDetails(userId) // Llamada para cargar detalles de usuario
+                }
+            },
+            modifier = Modifier.padding(vertical = 16.dp)
+        ) {
             Text(text = "Mostrar Resumen de Usuario")
         }
 

@@ -11,7 +11,9 @@ import com.example.merco242.repository.UserRepository
 import com.example.merco242.repository.UserRepositoryImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import com.google.firebase.firestore.FirebaseFirestore
 
 class SignupViewModel(
     private val authRepository: AuthRepository = AuthRepositoryImpl(),
@@ -25,6 +27,8 @@ class SignupViewModel(
     // Datos de usuario cargados
     private val _userDetails = MutableLiveData<User?>()
     val userDetails: LiveData<User?> get() = _userDetails
+
+    private val db = FirebaseFirestore.getInstance()
 
     fun setUserType(userType: String) {
         selectedUserType = userType
@@ -66,9 +70,22 @@ class SignupViewModel(
 
     fun loadUserDetails(userId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val user = userRepository.getCurrentUser()
-            withContext(Dispatchers.Main) {
-                _userDetails.value = user
+            try {
+                // Seleccionar la colección correcta en función del tipo de usuario
+                val collectionName = if (selectedUserType == "buyer") "buyers" else "sellers"
+
+                // Obtener el documento del usuario desde Firestore
+                val documentSnapshot = db.collection(collectionName).document(userId).get().await()
+
+                // Convertir el documento en un objeto User y actualizar el LiveData
+                val user = documentSnapshot.toObject(User::class.java)
+                withContext(Dispatchers.Main) {
+                    _userDetails.value = user
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    errorMessage.value = "Error al cargar los datos del usuario: ${e.message}"
+                }
             }
         }
     }
