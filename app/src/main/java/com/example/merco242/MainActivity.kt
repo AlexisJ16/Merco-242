@@ -1,6 +1,5 @@
 package com.example.merco242
 
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -8,7 +7,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -18,9 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -28,9 +24,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.merco242.domain.model.User
 import com.example.merco242.ui.theme.Merco242Theme
-import com.example.merco242.viewmodel.ProfileViewModel
 import com.example.merco242.viewmodel.SignupViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -38,10 +32,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -101,7 +92,9 @@ class MainActivity : ComponentActivity() {
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     val user = FirebaseAuth.getInstance().currentUser
-                    signupViewModel.updateAuthState(user)
+                    user?.let {
+                        signupViewModel.loadUserDetails(it.uid) // Ahora pasamos el userId correctamente
+                    }
                 } else {
                     Toast.makeText(this, "Firebase Authentication failed.", Toast.LENGTH_SHORT).show()
                 }
@@ -112,21 +105,21 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun App(onGoogleSignIn: () -> Unit) {
     val navController = rememberNavController()
+    val signupViewModel: SignupViewModel = viewModel()
+
     NavHost(navController = navController, startDestination = "splash") {
         composable("splash") { SplashScreen(navController) }
-        composable("user_selection") { UserSelectionScreen(navController, onGoogleSignIn) }
-        composable("login") { LoginScreen(navController, onGoogleSignIn) }
-        composable("signup") { SignupScreen(navController) }
-        composable("profile") { ProfileScreen(navController) }
-        composable("buyer_dashboard") { BuyerDashboard(navController) }
-        composable("seller_dashboard") { SellerDashboard(navController) }
+        composable("user_selection") { UserSelectionScreen(navController, signupViewModel, onGoogleSignIn) }
+        composable("login") { LoginScreen(navController, signupViewModel) }
+        composable("buyer_dashboard") { BuyerDashboard(navController, signupViewModel) }
+        composable("seller_dashboard") { SellerDashboard(navController, signupViewModel) }
     }
 }
 
 @Composable
 fun SplashScreen(navController: NavController) {
     LaunchedEffect(Unit) {
-        delay(3000) // 3 seconds
+        delay(3000)
         navController.navigate("user_selection")
     }
 
@@ -146,7 +139,7 @@ fun SplashScreen(navController: NavController) {
 }
 
 @Composable
-fun UserSelectionScreen(navController: NavController, onGoogleSignIn: () -> Unit) {
+fun UserSelectionScreen(navController: NavController, signupViewModel: SignupViewModel, onGoogleSignIn: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -155,14 +148,16 @@ fun UserSelectionScreen(navController: NavController, onGoogleSignIn: () -> Unit
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "¿Quien eres?",
-            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-            fontSize = 24.sp,
+            text = "¿Quién eres?",
+            style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
         Button(
-            onClick = { navController.navigate("login") },
+            onClick = {
+                signupViewModel.setUserType("buyer")
+                navController.navigate("login")
+            },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)),
             shape = RoundedCornerShape(20.dp),
             modifier = Modifier
@@ -173,7 +168,10 @@ fun UserSelectionScreen(navController: NavController, onGoogleSignIn: () -> Unit
         }
 
         Button(
-            onClick = { navController.navigate("login") },
+            onClick = {
+                signupViewModel.setUserType("seller")
+                navController.navigate("login")
+            },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)),
             shape = RoundedCornerShape(20.dp),
             modifier = Modifier
@@ -198,30 +196,24 @@ fun UserSelectionScreen(navController: NavController, onGoogleSignIn: () -> Unit
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "O inicia sesión con:", color = Color.Black, fontSize = 16.sp)
+        Text(text = "O inicia sesión con:", color = Color.Black)
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-            IconButton(onClick = onGoogleSignIn) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_google),
-                    contentDescription = "Google Sign-In",
-                    modifier = Modifier.size(48.dp)
-                )
-            }
+        IconButton(onClick = onGoogleSignIn) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_google),
+                contentDescription = "Google Sign-In",
+                modifier = Modifier.size(48.dp)
+            )
         }
     }
 }
 
 @Composable
-fun LoginScreen(
-    navController: NavController,
-    onGoogleSignIn: () -> Unit = {},
-    authViewModel: SignupViewModel = viewModel()
-) {
-    val authState by authViewModel.authState.observeAsState()
-    val errorMessage by authViewModel.errorMessage.observeAsState()
+fun LoginScreen(navController: NavController, signupViewModel: SignupViewModel) {
+    val authState by signupViewModel.authState.observeAsState()
+    val errorMessage by signupViewModel.errorMessage.observeAsState()
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -233,7 +225,11 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Iniciar sesión", style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold), fontSize = 24.sp)
+        Text(
+            text = "Iniciar sesión",
+            style = MaterialTheme.typography.headlineSmall,
+            fontSize = 24.sp
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -257,7 +253,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { authViewModel.loginUser(email, password, "buyer") },
+            onClick = { signupViewModel.loginUser(email, password) },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)),
             shape = RoundedCornerShape(20.dp),
             modifier = Modifier
@@ -269,130 +265,63 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = "O inicia sesión con:",
-            color = Color.Black,
-            fontSize = 16.sp,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        IconButton(onClick = onGoogleSignIn) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_google),
-                contentDescription = "Google Sign-In",
-                modifier = Modifier.size(48.dp)
-            )
-        }
-    }
-}
-
-
-@Composable
-fun SignupScreen(navController: NavController, signupViewModel: SignupViewModel = viewModel()) {
-    val authState by signupViewModel.authState.observeAsState()
-    var name by remember { mutableStateOf("") }
-    var lastname by remember { mutableStateOf("") }
-    var celphone by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var selectedUserType by remember { mutableStateOf("buyer") }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = "Sign Up", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(bottom = 24.dp))
-
-        TextField(value = name, onValueChange = { name = it }, label = { Text("First Name") })
-        TextField(value = lastname, onValueChange = { lastname = it }, label = { Text("Last Name") })
-        TextField(value = celphone, onValueChange = { celphone = it }, label = { Text("Cellphone") })
-        TextField(value = email, onValueChange = { email = it }, label = { Text("Email") })
-        TextField(value = password, onValueChange = { password = it }, label = { Text("Password") }, visualTransformation = PasswordVisualTransformation())
-
-        Row(horizontalArrangement = Arrangement.SpaceEvenly) {
-            Button(onClick = { selectedUserType = "buyer" }, colors = ButtonDefaults.buttonColors(containerColor = if (selectedUserType == "buyer") Color.Green else Color.Gray)) {
-                Text(text = "Buyer")
-            }
-            Button(onClick = { selectedUserType = "seller" }, colors = ButtonDefaults.buttonColors(containerColor = if (selectedUserType == "seller") Color.Green else Color.Gray)) {
-                Text(text = "Seller")
-            }
-        }
-
-        Button(onClick = {
-            signupViewModel.registerUser(User("", name, lastname, celphone, email), password, selectedUserType)
-        }) {
-            Text(text = "Register")
-        }
-
         when (authState) {
             1 -> CircularProgressIndicator()
-            2 -> Text(text = "Error occurred", color = Color.Red)
-            3 -> navController.navigate("profile")
+            2 -> errorMessage?.let { Text(text = it, color = Color.Red) }
+            3 -> {
+                when (signupViewModel.selectedUserType) {
+                    "buyer" -> navController.navigate("buyer_dashboard")
+                    "seller" -> navController.navigate("seller_dashboard")
+                }
+            }
         }
     }
 }
 
 @Composable
-fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewModel = viewModel()) {
-    val userState by profileViewModel.user.observeAsState()
+fun BuyerDashboard(navController: NavController, signupViewModel: SignupViewModel) {
+    val userDetails by signupViewModel.userDetails.observeAsState()
 
-    LaunchedEffect(true) {
-        profileViewModel.getCurrentUser()
-    }
-
-    if (userState == null) {
-        navController.navigate("login")
-    } else {
-        Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
-            Text(text = "Welcome ${userState?.name}")
-
-            Button(onClick = { profileViewModel.funcion1() }) { Text(text = "Function 1") }
-            Button(onClick = { profileViewModel.funcion2() }) { Text(text = "Function 2") }
-            Button(onClick = { profileViewModel.funcion3() }) { Text(text = "Function 3") }
-
-            Button(onClick = {
-                Firebase.auth.signOut()
-                navController.navigate("login")
-            }) { Text(text = "Log Out") }
-        }
-    }
-}
-
-@Composable
-fun BuyerDashboard(navController: NavController) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Welcome Buyer", style = MaterialTheme.typography.headlineSmall)
+        Text(text = "Bienvenido Buyer", style = MaterialTheme.typography.headlineSmall)
 
-        Button(onClick = {
-            Firebase.auth.signOut()
-            navController.navigate("login")
-        }) {
-            Text(text = "Log Out")
+        Button(onClick = { signupViewModel.loadUserDetails(FirebaseAuth.getInstance().currentUser?.uid ?: "") }) {
+            Text(text = "Mostrar Resumen de Usuario")
+        }
+
+        userDetails?.let { user ->
+            Text("Nombre: ${user.name}")
+            Text("Apellido: ${user.lastname}")
+            Text("Celular: ${user.celphone}")
+            Text("Email: ${user.email}")
         }
     }
 }
 
 @Composable
-fun SellerDashboard(navController: NavController) {
+fun SellerDashboard(navController: NavController, signupViewModel: SignupViewModel) {
+    val userDetails by signupViewModel.userDetails.observeAsState()
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Welcome Seller", style = MaterialTheme.typography.headlineSmall)
+        Text(text = "Bienvenido Seller", style = MaterialTheme.typography.headlineSmall)
 
-        Button(onClick = {
-            Firebase.auth.signOut()
-            navController.navigate("login")
-        }) {
-            Text(text = "Log Out")
+        Button(onClick = { signupViewModel.loadUserDetails(FirebaseAuth.getInstance().currentUser?.uid ?: "") }) {
+            Text(text = "Mostrar Resumen de Usuario")
+        }
+
+        userDetails?.let { user ->
+            Text("Nombre: ${user.name}")
+            Text("Apellido: ${user.lastname}")
+            Text("Celular: ${user.celphone}")
+            Text("Email: ${user.email}")
         }
     }
 }
