@@ -1,49 +1,39 @@
 package com.example.merco242.service
 
-
 import android.util.Log
 import com.example.merco242.domain.model.User
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import com.example.merco242.utils.FirebaseInitializer
 import kotlinx.coroutines.tasks.await
-
-
-//
-
 
 interface UserServices {
     suspend fun createUser(user: User)
-    suspend fun getUserById(id:String):User?
+    suspend fun getUserById(id: String): User?
 }
 
-class UserServicesImpl:UserServices{
+class UserServicesImpl : UserServices {
+
+    private val db = FirebaseInitializer.firestore
+
     override suspend fun createUser(user: User) {
         try {
-            Log.d("UserServicesImpl", "Creando usuario con ID: ${user.id}")
-
-            // Referencia a la colección "users", creando o actualizando un documento con el ID del usuario
-            Firebase.firestore
-                .collection("users")           // Colección "users"
-                .document(user.id)             // El nombre del documento será el user.id
-                .set(user)                     // Guardar el objeto "user" en Firestore
-                .await()                       // Espera a que la operación termine (como estás usando `suspend`)
-
-            Log.d("UserServicesImpl", "Usuario creado con éxito")
+            val document = db.collection("users").document(user.id).get().await()
+            if (!document.exists()) {
+                db.collection("users").document(user.id).set(user).await()
+                Log.d("UserServicesImpl", "Usuario creado exitosamente")
+            }
         } catch (e: Exception) {
-            // Manejo de errores si algo sale mal
-            Log.e("UserServicesImpl", "Error al crear el usuario: ${e.message}")
+            Log.e("UserServicesImpl", "Error creando usuario: ${e.message}")
+            throw e
         }
     }
 
-
     override suspend fun getUserById(id: String): User? {
-        val user = Firebase.firestore
-            .collection("users")
-            .document(id)
-            .get()
-            .await()
-        val userObject = user.toObject(User::class.java)
-        return userObject
+        return try {
+            val document = db.collection("users").document(id).get().await()
+            document.toObject(User::class.java)
+        } catch (e: Exception) {
+            Log.e("UserServicesImpl", "Error obteniendo usuario: ${e.message}")
+            null
+        }
     }
-
 }
