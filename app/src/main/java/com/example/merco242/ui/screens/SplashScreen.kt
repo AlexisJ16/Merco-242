@@ -22,8 +22,9 @@ fun SplashScreen(navController: NavHostController) {
                 popUpTo("splash") { inclusive = true }
             }
         } else {
+            // Determina el tipo de usuario y redirige a la pantalla correspondiente
             val userType = getUserType(currentUser.uid)
-            val destination = if (userType == "buyer") "buyer_menu" else "seller_menu"
+            val destination = if (userType == "buyer") "buyer_main" else "seller_main"
             navController.navigate(destination) {
                 popUpTo("splash") { inclusive = true }
             }
@@ -38,6 +39,7 @@ fun SplashScreen(navController: NavHostController) {
 }
 
 private fun getUserType(uid: String): String {
-    // Lógica para obtener el tipo de usuario desde Firestore o algún ViewModel.
-    return "buyer" // Placeholder. Implementar lógica real.
+    // Placeholder: Implementa la lógica real para determinar el tipo de usuario.
+    return "buyer"
 }
+

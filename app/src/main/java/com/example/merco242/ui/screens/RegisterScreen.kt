@@ -18,7 +18,18 @@ fun RegisterScreen(navController: NavHostController, signupViewModel: SignupView
     var lastName by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
     var userType by remember { mutableStateOf("buyer") }
-    var expanded by remember { mutableStateOf(false) } // Estado para el menú desplegable
+    var expanded by remember { mutableStateOf(false) }
+
+    // Observa el estado de registro para redirigir al inicio de sesión tras un registro exitoso
+    val registerState = signupViewModel.authState
+
+    LaunchedEffect(registerState) {
+        if (registerState == 3) { // Estado de éxito
+            navController.navigate("login") {
+                popUpTo("register") { inclusive = true }
+            }
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Registro de Usuario", style = MaterialTheme.typography.headlineSmall)
@@ -30,7 +41,6 @@ fun RegisterScreen(navController: NavHostController, signupViewModel: SignupView
             label = { Text("Nombre") },
             modifier = Modifier.fillMaxWidth()
         )
-
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
@@ -39,7 +49,6 @@ fun RegisterScreen(navController: NavHostController, signupViewModel: SignupView
             label = { Text("Apellido") },
             modifier = Modifier.fillMaxWidth()
         )
-
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
@@ -48,7 +57,6 @@ fun RegisterScreen(navController: NavHostController, signupViewModel: SignupView
             label = { Text("Teléfono") },
             modifier = Modifier.fillMaxWidth()
         )
-
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
@@ -57,7 +65,6 @@ fun RegisterScreen(navController: NavHostController, signupViewModel: SignupView
             label = { Text("Correo Electrónico") },
             modifier = Modifier.fillMaxWidth()
         )
-
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
@@ -67,10 +74,8 @@ fun RegisterScreen(navController: NavHostController, signupViewModel: SignupView
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation()
         )
-
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Menú desplegable para seleccionar tipo de usuario
         Box {
             Button(
                 onClick = { expanded = true },
@@ -98,7 +103,6 @@ fun RegisterScreen(navController: NavHostController, signupViewModel: SignupView
                 )
             }
         }
-
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(

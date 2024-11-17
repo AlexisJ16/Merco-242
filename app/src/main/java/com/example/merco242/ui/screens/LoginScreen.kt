@@ -14,7 +14,18 @@ fun LoginScreen(navController: NavHostController, signupViewModel: SignupViewMod
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var userType by remember { mutableStateOf("buyer") }
-    var expanded by remember { mutableStateOf(false) } // Estado para controlar el menú desplegable
+    var expanded by remember { mutableStateOf(false) }
+
+    val loginState = signupViewModel.authState // Acceso directo al estado
+
+    LaunchedEffect(loginState) {
+        if (loginState == 3) { // Estado de éxito
+            val destination = if (userType == "buyer") "buyer_main" else "seller_main"
+            navController.navigate(destination) {
+                popUpTo("login") { inclusive = true }
+            }
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Iniciar Sesión", style = MaterialTheme.typography.headlineSmall)
@@ -26,7 +37,6 @@ fun LoginScreen(navController: NavHostController, signupViewModel: SignupViewMod
             label = { Text("Correo Electrónico") },
             modifier = Modifier.fillMaxWidth()
         )
-
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
@@ -36,10 +46,8 @@ fun LoginScreen(navController: NavHostController, signupViewModel: SignupViewMod
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation()
         )
-
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Botón y menú desplegable
         Box {
             Button(
                 onClick = { expanded = true },
@@ -67,7 +75,6 @@ fun LoginScreen(navController: NavHostController, signupViewModel: SignupViewMod
                 )
             }
         }
-
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
@@ -76,9 +83,7 @@ fun LoginScreen(navController: NavHostController, signupViewModel: SignupViewMod
         ) {
             Text("Ingresar")
         }
-
         Spacer(modifier = Modifier.height(8.dp))
-
         TextButton(onClick = { navController.navigate("register") }) {
             Text("¿No tienes cuenta? Regístrate")
         }
