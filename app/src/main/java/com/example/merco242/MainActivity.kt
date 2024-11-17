@@ -69,7 +69,7 @@ fun AppNavigation(
         composable("splash") { SplashScreen(navController) }
         composable("login") { LoginScreen(navController, signupViewModel) }
         composable("register") { RegisterScreen(navController, signupViewModel) }
-        composable("buyer_menu") { StoreListScreen(navController, storeViewModel) }
-        composable("seller_menu") { ReservationListScreen(reservationViewModel) }
+        composable("buyer_main") { BuyerMainScreen(navController) }
+        composable("seller_main") { SellerMainScreen(navController) }
     }
 }
