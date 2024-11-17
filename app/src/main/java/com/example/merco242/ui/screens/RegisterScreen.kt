@@ -3,6 +3,7 @@ package com.example.merco242.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -20,9 +21,10 @@ fun RegisterScreen(navController: NavHostController, signupViewModel: SignupView
     var userType by remember { mutableStateOf("buyer") }
     var expanded by remember { mutableStateOf(false) }
 
-    // Observa el estado de registro para redirigir al inicio de sesión tras un registro exitoso
-    val registerState = signupViewModel.authState
+    // Observar el estado de registro
+    val registerState by signupViewModel.authState.observeAsState(0)
 
+    // Navegación en caso de éxito
     LaunchedEffect(registerState) {
         if (registerState == 3) { // Estado de éxito
             navController.navigate("login") {
