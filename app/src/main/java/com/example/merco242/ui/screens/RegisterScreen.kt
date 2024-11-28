@@ -24,14 +24,14 @@ fun RegisterScreen(navController: NavHostController, signupViewModel: SignupView
     // Observar el estado de registro
     val registerState by signupViewModel.authState.observeAsState(0)
 
-    // Navegación en caso de éxito
     LaunchedEffect(registerState) {
-        if (registerState == 3) { // Estado de éxito
+        if (registerState == 3) { // Registro exitoso
             navController.navigate("login") {
                 popUpTo("register") { inclusive = true }
             }
         }
     }
+
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Registro de Usuario", style = MaterialTheme.typography.headlineSmall)

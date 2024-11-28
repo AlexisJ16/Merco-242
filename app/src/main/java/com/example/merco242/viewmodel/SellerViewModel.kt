@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.merco242.domain.model.Category
 import com.example.merco242.domain.model.Product
+import com.example.merco242.domain.model.User
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,6 +14,7 @@ import kotlinx.coroutines.tasks.await
 
 class SellerViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
 
     // Categorías
     private val _categories = MutableStateFlow<List<Category>>(emptyList())
@@ -21,11 +24,17 @@ class SellerViewModel : ViewModel() {
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     val products: StateFlow<List<Product>> get() = _products
 
+    // Usuario
+    private val _user = MutableStateFlow<User?>(null)
+    val user: StateFlow<User?> get() = _user
+
     init {
         fetchCategories()
         fetchProducts()
+        fetchUser()
     }
 
+    // Obtener las categorías
     fun fetchCategories() {
         viewModelScope.launch {
             try {
@@ -38,6 +47,7 @@ class SellerViewModel : ViewModel() {
         }
     }
 
+    // Obtener los productos
     fun fetchProducts() {
         viewModelScope.launch {
             try {
@@ -50,6 +60,7 @@ class SellerViewModel : ViewModel() {
         }
     }
 
+    // Agregar una categoría
     fun addCategory(category: Category, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
@@ -62,6 +73,7 @@ class SellerViewModel : ViewModel() {
         }
     }
 
+    // Agregar un producto
     fun addProduct(product: Product, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
@@ -80,6 +92,81 @@ class SellerViewModel : ViewModel() {
                 onComplete(true)
             } catch (e: Exception) {
                 onComplete(false)
+            }
+        }
+    }
+
+    // Actualizar el nombre de una categoría
+    fun updateCategoryName(categoryId: String, newName: String) {
+        viewModelScope.launch {
+            try {
+                db.collection("categories").document(categoryId).update("name", newName).await()
+                fetchCategories()
+            } catch (e: Exception) {
+                // Manejo de errores
+            }
+        }
+    }
+
+    // Eliminar un producto
+    fun deleteProduct(productId: String) {
+        viewModelScope.launch {
+            try {
+                db.collection("products").document(productId).delete().await()
+                fetchProducts()
+            } catch (e: Exception) {
+                // Manejo de errores
+            }
+        }
+    }
+
+    // Eliminar una categoría y sus productos asociados
+    fun deleteCategory(categoryId: String) {
+        viewModelScope.launch {
+            try {
+                // Eliminar los productos relacionados
+                val productsToDelete = _products.value.filter { it.categoryId == categoryId }
+                productsToDelete.forEach { deleteProduct(it.id) }
+
+                // Eliminar la categoría
+                db.collection("categories").document(categoryId).delete().await()
+                fetchCategories()
+            } catch (e: Exception) {
+                // Manejo de errores
+            }
+        }
+    }
+
+    fun fetchUser() {
+        viewModelScope.launch {
+            try {
+                val firebaseUser = auth.currentUser
+                firebaseUser?.let {
+                    val userDocument = db.collection("users").document(it.uid).get().await()
+                    _user.value = userDocument.toObject(User::class.java)
+                } ?: run {
+                    _user.value = null
+                }
+            } catch (e: Exception) {
+                _user.value = null // Manejo de errores, usuario no encontrado
+            }
+        }
+    }
+
+    fun logout() {
+        auth.signOut()
+    }
+
+    fun deleteUser() {
+        viewModelScope.launch {
+            try {
+                val firebaseUser = auth.currentUser
+                firebaseUser?.let {
+                    db.collection("users").document(it.uid).delete().await() // Eliminar de Firestore
+                    it.delete().await() // Eliminar de Firebase Authentication
+                }
+            } catch (e: Exception) {
+                // Manejo de errores
             }
         }
     }

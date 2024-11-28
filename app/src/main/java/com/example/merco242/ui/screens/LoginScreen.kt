@@ -11,40 +11,53 @@ import androidx.navigation.NavHostController
 import com.example.merco242.viewmodel.SignupViewModel
 
 @Composable
-fun LoginScreen(navController: NavHostController, signupViewModel: SignupViewModel) {
-    // Variables para los campos de entrada
+fun LoginScreen(
+    navController: NavHostController,
+    signupViewModel: SignupViewModel
+) {
+    // Campos para capturar datos de inicio de sesión
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var userType by remember { mutableStateOf("buyer") }
-    var expanded by remember { mutableStateOf(false) } // Estado para el menú desplegable
+    var expanded by remember { mutableStateOf(false) }
 
-    // Observar los estados del ViewModel
+    // Observar el estado de autenticación desde el ViewModel
     val loginState by signupViewModel.authState.observeAsState(0)
     val errorMessage by signupViewModel.errorMessage.observeAsState("")
+    var userType by remember { mutableStateOf("buyer") } // Buyer como predeterminado
 
-    // Efecto para manejar la navegación según el estado de autenticación
+    // Efecto para manejar la navegación según el estado de inicio de sesión
     LaunchedEffect(loginState) {
         when (loginState) {
             3 -> { // Inicio de sesión exitoso
-                val destination = if (userType == "buyer") "buyer_main" else "seller_main"
+                val destination = if (signupViewModel.selectedUserType == "buyer") {
+                    "buyer_main"
+                } else {
+                    "seller_main"
+                }
                 navController.navigate(destination) {
                     popUpTo("login") { inclusive = true }
                 }
             }
-            2 -> { /* Manejo de errores ya se refleja en la UI */ }
+            2 -> { /* Error, mensaje ya reflejado en la UI */ }
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    // UI del formulario de inicio de sesión
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center
+    ) {
         Text("Iniciar Sesión", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Mostrar mensaje de error si existe
-        if (!errorMessage.isNullOrEmpty()) {
+        // Mostrar mensaje de error
+        if (errorMessage?.isNotEmpty() == true) {
             Text(
-                errorMessage!!,
+                text = errorMessage!!,
                 color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodyMedium
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
@@ -68,13 +81,13 @@ fun LoginScreen(navController: NavHostController, signupViewModel: SignupViewMod
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Menú desplegable para tipo de usuario
+        // Selección del tipo de usuario
         Box {
             Button(
                 onClick = { expanded = true },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Tipo de Usuario: $userType")
+                Text("Tipo de Usuario: ${userType.capitalize()}")
             }
             DropdownMenu(
                 expanded = expanded,
@@ -84,7 +97,7 @@ fun LoginScreen(navController: NavHostController, signupViewModel: SignupViewMod
                     text = { Text("Buyer") },
                     onClick = {
                         userType = "buyer"
-                        signupViewModel.selectedUserType = "buyer" // Actualizar en el ViewModel
+                        signupViewModel.selectedUserType = "buyer"
                         expanded = false
                     }
                 )
@@ -92,7 +105,7 @@ fun LoginScreen(navController: NavHostController, signupViewModel: SignupViewMod
                     text = { Text("Seller") },
                     onClick = {
                         userType = "seller"
-                        signupViewModel.selectedUserType = "seller" // Actualizar en el ViewModel
+                        signupViewModel.selectedUserType = "seller"
                         expanded = false
                     }
                 )
@@ -100,9 +113,11 @@ fun LoginScreen(navController: NavHostController, signupViewModel: SignupViewMod
         }
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botón de inicio de sesión
+        // Botón para iniciar sesión
         Button(
-            onClick = { signupViewModel.loginUser(email, password) },
+            onClick = {
+                signupViewModel.loginUser(email, password)
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Ingresar")
@@ -110,7 +125,11 @@ fun LoginScreen(navController: NavHostController, signupViewModel: SignupViewMod
         Spacer(modifier = Modifier.height(8.dp))
 
         // Botón para redirigir al registro
-        TextButton(onClick = { navController.navigate("register") }) {
+        TextButton(
+            onClick = {
+                navController.navigate("register")
+            }
+        ) {
             Text("¿No tienes cuenta? Regístrate")
         }
     }
