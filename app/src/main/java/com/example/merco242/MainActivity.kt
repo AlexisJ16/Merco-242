@@ -5,9 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.merco242.ui.screens.*
 import com.example.merco242.ui.theme.Merco242Theme
 import com.example.merco242.viewmodel.*
@@ -38,7 +40,7 @@ fun AppNavigation(
 ) {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "splash") {
+    NavHost(navController = navController, startDestination = "login") { // Login como pantalla inicial
         composable("splash") { SplashScreen(navController) }
         composable("login") { LoginScreen(navController, signupViewModel) }
         composable("register") { RegisterScreen(navController, signupViewModel) }
@@ -46,10 +48,23 @@ fun AppNavigation(
         composable("seller_main") { SellerMainScreen(navController, sellerViewModel) }
         composable("add_category") { AddCategoryScreen(navController, sellerViewModel) }
         composable("add_product") { AddProductScreen(navController, sellerViewModel) }
-        composable("profile") { ProfileScreen() }
+        composable("profile") { ProfileScreen(navController, sellerViewModel) }
         composable("orders") { OrdersScreen() }
         composable("help") { HelpScreen() }
         composable("logout") { LogoutScreen(navController) }
+
+        composable(
+            route = "category_detail/{categoryId}",
+            arguments = listOf(
+                navArgument("categoryId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val categoryId = backStackEntry.arguments?.getString("categoryId") ?: ""
+            CategoryDetailScreen(
+                navController = navController,
+                categoryId = categoryId,
+                sellerViewModel = sellerViewModel
+            )
+        }
     }
 }
-
