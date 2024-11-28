@@ -1,56 +1,126 @@
 package com.example.merco242.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import com.example.merco242.domain.model.Product
 import com.example.merco242.domain.model.Reservation
-import com.example.merco242.domain.model.Store
-import com.example.merco242.viewmodel.ReservationViewModel
-import com.example.merco242.viewmodel.StoreViewModel
+import com.example.merco242.viewmodel.BuyerViewModel
+import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StoreDetailScreen(
-    navController: NavController,
+    navController: NavHostController,
     storeId: String,
-    storeViewModel: StoreViewModel,
-    reservationViewModel: ReservationViewModel
+    buyerViewModel: BuyerViewModel
 ) {
-    val stores by storeViewModel.stores.collectAsState()
-    val store = stores.find { it.id == storeId }
+    val store by buyerViewModel.getStoreById(storeId).collectAsState(initial = null)
+    val products by buyerViewModel.products.collectAsState()
 
-    if (store != null) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            Text(text = store.name, style = MaterialTheme.typography.headlineSmall)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = store.address)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = store.description)
+    LaunchedEffect(Unit) {
+        buyerViewModel.fetchProducts()
+    }
 
-            Spacer(modifier = Modifier.height(16.dp))
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(store?.name ?: "Detalles de la Tienda") }
+            )
+        }
+    ) { padding ->
+        if (store != null) {
+            val storeProducts = products.filter { it.categoryId == storeId }
 
-            Button(onClick = {
-                val userId = "current_user_id_placeholder" // Obtén el usuario actual de tu ViewModel o Auth
-                val reservation = Reservation(
-                    userId = userId,
-                    storeId = store.id,
-                    storeName = store.name
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = store!!.name,
+                    style = MaterialTheme.typography.headlineSmall
                 )
-                reservationViewModel.createReservation(reservation) { success ->
-                    if (success) {
-                        navController.popBackStack()
-                    } else {
-                        // Manejar error
+                Text(
+                    text = "Dirección: ${store!!.address}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (storeProducts.isEmpty()) {
+                    Text(
+                        text = "No hay productos disponibles en esta tienda.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    LazyColumn(
+                        contentPadding = PaddingValues(vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(storeProducts.size) { index ->
+                            val product = storeProducts[index]
+                            ProductCardReservable(
+                                product = product,
+                                onReserve = {
+                                    val reservation = Reservation(
+                                        id = UUID.randomUUID().toString(),
+                                        userId = "current_user_id_placeholder", // Reemplazar con el ID del usuario actual.
+                                        storeId = storeId,
+                                        storeName = store!!.name,
+                                        timestamp = System.currentTimeMillis()
+                                    )
+                                    buyerViewModel.reserveProduct(reservation) { success ->
+                                        if (success) {
+                                            navController.popBackStack()
+                                        } else {
+                                            // Manejo de error, por ejemplo: mostrar un Snackbar.
+                                        }
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
-            }) {
-                Text("Reservar en esta tienda")
+            }
+        }
+    }
+}
+
+@Composable
+fun ProductCardReservable(product: Product, onReserve: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(
+                    text = product.name,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = "Precio: $${product.price}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Button(onClick = onReserve) {
+                Text("Reservar")
             }
         }
     }

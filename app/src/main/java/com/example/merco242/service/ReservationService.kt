@@ -8,6 +8,7 @@ import kotlinx.coroutines.tasks.await
 interface ReservationService {
     suspend fun createReservation(reservation: Reservation): Boolean
     suspend fun getUserReservations(userId: String): List<Reservation>
+    suspend fun deleteReservation(reservationId: String) // Agregado
 }
 
 class ReservationServiceImpl : ReservationService {
@@ -19,18 +20,28 @@ class ReservationServiceImpl : ReservationService {
             collection.add(reservation).await()
             true
         } catch (e: Exception) {
-            Log.e("ReservationServiceImpl", "Error creando reserva: ${e.message}")
             false
         }
     }
 
     override suspend fun getUserReservations(userId: String): List<Reservation> {
         return try {
-            val documents = db.collection("reservations").whereEqualTo("userId", userId).get().await()
+            val documents = db.collection("reservations")
+                .whereEqualTo("userId", userId)
+                .get()
+                .await()
             documents.documents.mapNotNull { it.toObject(Reservation::class.java) }
         } catch (e: Exception) {
-            Log.e("ReservationServiceImpl", "Error obteniendo reservas: ${e.message}")
             emptyList()
         }
     }
+
+    override suspend fun deleteReservation(reservationId: String) {
+        try {
+            db.collection("reservations").document(reservationId).delete().await()
+        } catch (e: Exception) {
+            throw Exception("Error eliminando la reserva: ${e.message}")
+        }
+    }
 }
+

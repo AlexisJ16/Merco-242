@@ -2,7 +2,6 @@ package com.example.merco242.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -76,7 +75,7 @@ fun CategoryDetailScreen(
             ) {
                 items(categoryProducts.size) { index ->
                     val product = categoryProducts[index]
-                    ProductCard(product, onDelete = {
+                    ProductCardDeletable(product, onDelete = {
                         sellerViewModel.deleteProduct(product.id)
                     })
                 }
@@ -92,7 +91,6 @@ fun CategoryDetailScreen(
             }
         }
 
-        // Ventana de Confirmación para Borrar Categoría
         if (showDeleteConfirmation) {
             AlertDialog(
                 onDismissRequest = { showDeleteConfirmation = false },
@@ -123,39 +121,31 @@ fun CategoryDetailScreen(
 }
 
 @Composable
-fun ProductCard(product: Product, onDelete: () -> Unit) {
+fun ProductCardDeletable(product: Product, onDelete: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            Column {
                 Text(
                     text = product.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.Black
+                    style = MaterialTheme.typography.titleMedium
                 )
                 Text(
                     text = "Precio: $${product.price}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Button(
-                onClick = onDelete,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                modifier = Modifier.size(90.dp, 40.dp)
-            ) {
-                Text("Eliminar", color = Color.White, style = MaterialTheme.typography.bodySmall)
+            Button(onClick = onDelete) {
+                Text("Eliminar")
             }
         }
     }

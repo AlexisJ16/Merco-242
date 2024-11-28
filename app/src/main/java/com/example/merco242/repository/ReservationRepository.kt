@@ -7,7 +7,9 @@ import com.example.merco242.service.ReservationServiceImpl
 interface ReservationRepository {
     suspend fun createReservation(reservation: Reservation): Boolean
     suspend fun getUserReservations(userId: String): List<Reservation>
+    suspend fun deleteReservation(reservationId: String) // Agregado
 }
+
 
 class ReservationRepositoryImpl(
     private val reservationService: ReservationService = ReservationServiceImpl()
@@ -18,5 +20,9 @@ class ReservationRepositoryImpl(
 
     override suspend fun getUserReservations(userId: String): List<Reservation> {
         return reservationService.getUserReservations(userId)
+    }
+
+    override suspend fun deleteReservation(reservationId: String) {
+        reservationService.deleteReservation(reservationId) // Llamar al servicio
     }
 }

@@ -5,5 +5,5 @@ import androidx.navigation.NavHostController
 
 @Composable
 fun LogoutScreen(navController: NavHostController) {
-    navController.popBackStack("LoginScreen", inclusive = true)
+    navController.popBackStack("login", inclusive = true)
 }
