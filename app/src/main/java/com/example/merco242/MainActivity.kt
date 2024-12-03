@@ -12,9 +12,21 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.merco242.ui.screens.*
+import com.example.merco242.ui.screens.BuyerMainScreen
+import com.example.merco242.ui.screens.CreateStoreScreen
+import com.example.merco242.ui.screens.EditStoreDetailScreen
+import com.example.merco242.ui.screens.EditStoreScreen
+import com.example.merco242.ui.screens.HelpScreen
+import com.example.merco242.ui.screens.LoginScreen
+import com.example.merco242.ui.screens.RegisterScreen
+import com.example.merco242.ui.screens.ReservationListScreen
+import com.example.merco242.ui.screens.SellerMainScreen
+import com.example.merco242.ui.screens.SplashScreen
+import com.example.merco242.ui.screens.StoreDetailScreen
 import com.example.merco242.ui.theme.Merco242Theme
-import com.example.merco242.viewmodel.*
+import com.example.merco242.viewmodel.BuyerViewModel
+import com.example.merco242.viewmodel.SellerViewModel
+import com.example.merco242.viewmodel.SignupViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -45,7 +57,6 @@ fun AppNavigation(
 ) {
     val navController = rememberNavController()
 
-    // Determinar pantalla inicial según el estado del usuario
     LaunchedEffect(Unit) {
         signupViewModel.fetchUserType { userType ->
             val isLoggedIn = signupViewModel.isLoggedIn()
@@ -64,7 +75,6 @@ fun AppNavigation(
     }
 
     NavHost(navController = navController, startDestination = "splash") {
-        // Pantalla Splash
         composable("splash") { SplashScreen(navController) }
 
         // Pantallas comunes
@@ -94,15 +104,18 @@ fun AppNavigation(
         // Navegación para vendedores
         navigation(startDestination = "seller_main", route = "seller") {
             composable("seller_main") { SellerMainScreen(navController, sellerViewModel) }
-            composable("add_category") { AddCategoryScreen(navController, sellerViewModel) }
-            composable("add_product") { AddProductScreen(navController, sellerViewModel) }
-            composable("profile") { ProfileScreen(navController, sellerViewModel) }
+            composable("create_store") { CreateStoreScreen(navController, sellerViewModel) }
+            composable("edit_store") { EditStoreScreen(navController, sellerViewModel) }
             composable(
-                route = "category_detail/{categoryId}",
-                arguments = listOf(navArgument("categoryId") { type = NavType.StringType })
+                route = "edit_store_detail/{storeId}",
+                arguments = listOf(navArgument("storeId") { type = NavType.StringType })
             ) { backStackEntry ->
-                val categoryId = backStackEntry.arguments?.getString("categoryId") ?: ""
-                CategoryDetailScreen(navController, categoryId, sellerViewModel)
+                val storeId = backStackEntry.arguments?.getString("storeId") ?: ""
+                EditStoreDetailScreen(
+                    navController,
+                    sellerViewModel,
+                    storeId
+                ) // Asegúrate de tener esta clase
             }
         }
     }

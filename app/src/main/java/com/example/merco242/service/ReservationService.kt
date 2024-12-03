@@ -1,6 +1,5 @@
 package com.example.merco242.service
 
-import android.util.Log
 import com.example.merco242.domain.model.Reservation
 import com.example.merco242.utils.FirebaseInitializer
 import kotlinx.coroutines.tasks.await

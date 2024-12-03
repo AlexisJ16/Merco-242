@@ -57,7 +57,8 @@ class BuyerViewModel(
         viewModelScope.launch {
             try {
                 val result = storeRepository.getStores()
-                _products.value = result.flatMap { it.products } // Procesar productos desde las tiendas
+                _products.value =
+                    result.flatMap { it.products } // Procesar productos desde las tiendas
             } catch (e: Exception) {
                 _products.value = emptyList()
             }
@@ -80,7 +81,8 @@ class BuyerViewModel(
     fun fetchReservations() {
         viewModelScope.launch {
             try {
-                val result = reservationRepository.getUserReservations("current_user_id_placeholder") // Reemplazar con el ID real
+                val result =
+                    reservationRepository.getUserReservations("current_user_id_placeholder") // Reemplazar con el ID real
                 _reservations.value = result
             } catch (e: Exception) {
                 _reservations.value = emptyList()
@@ -98,7 +100,6 @@ class BuyerViewModel(
             }
         }
     }
-
 
 
     /**
@@ -145,7 +146,6 @@ class BuyerViewModel(
         _reservations.value = emptyList()
         _stores.value = emptyList()
     }
-
 
 
 }

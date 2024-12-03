@@ -45,7 +45,10 @@ class ProfileViewModel(
 
     fun funcion2() {
         viewModelScope.launch(Dispatchers.IO) {
-            chatService.sendMessage(Message(UUID.randomUUID().toString(), "Prueba de la función 2"), "Tf1Vm5hS6ajLMDfbBHxR")
+            chatService.sendMessage(
+                Message(UUID.randomUUID().toString(), "Prueba de la función 2"),
+                "Tf1Vm5hS6ajLMDfbBHxR"
+            )
         }
     }
 

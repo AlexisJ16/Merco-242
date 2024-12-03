@@ -7,23 +7,23 @@ import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
 
 interface ChatService {
-    suspend fun searchChatId(userID1:String, userID2: String):String
-    suspend fun sendMessage(message: Message, chatroomID:String)
-    suspend fun getMessages(chatroomID: String):List<Message?>
+    suspend fun searchChatId(userID1: String, userID2: String): String
+    suspend fun sendMessage(message: Message, chatroomID: String)
+    suspend fun getMessages(chatroomID: String): List<Message?>
     suspend fun getLiveMessages(chatroomID: String)
 }
 
-class ChatServiceImpl:ChatService{
+class ChatServiceImpl : ChatService {
     override suspend fun searchChatId(userID1: String, userID2: String): String {
         val result = Firebase.firestore.collection("users")
             .document(userID2)
             .collection("chats")
-            .whereEqualTo("userid",userID1)
+            .whereEqualTo("userid", userID1)
             .get()
             .await()
-        if(result.documents.size == 0){
+        if (result.documents.size == 0) {
             return ""
-        }else{
+        } else {
             val chatid = result.documents[0].get("chatid").toString()
             return chatid
         }

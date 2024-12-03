@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.merco242.domain.model.Category
 import com.example.merco242.domain.model.Product
+import com.example.merco242.domain.model.Store
 import com.example.merco242.domain.model.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -24,6 +25,10 @@ class SellerViewModel : ViewModel() {
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     val products: StateFlow<List<Product>> get() = _products
 
+    // Tiendas
+    private val _stores = MutableStateFlow<List<Store>>(emptyList())
+    val stores: StateFlow<List<Store>> get() = _stores
+
     // Usuario
     private val _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> get() = _user
@@ -32,6 +37,7 @@ class SellerViewModel : ViewModel() {
         fetchCategories()
         fetchProducts()
         fetchUser()
+        fetchStores()
     }
 
     // Obtener las categorías
@@ -60,6 +66,56 @@ class SellerViewModel : ViewModel() {
         }
     }
 
+    // Crear tienda
+    fun createStore(store: Store, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                db.collection("stores").document(store.id).set(store).await()
+                fetchStores() // Actualizar la lista local
+                onResult(true)
+            } catch (e: Exception) {
+                onResult(false)
+            }
+        }
+    }
+
+    // Actualizar tienda
+    fun updateStore(store: Store, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                db.collection("stores").document(store.id).set(store).await()
+                fetchStores() // Actualizar la lista local
+                onResult(true)
+            } catch (e: Exception) {
+                onResult(false)
+            }
+        }
+    }
+
+    // Obtener tiendas creadas por el usuario actual
+    fun fetchStores() {
+        viewModelScope.launch {
+            try {
+                val currentUser = auth.currentUser
+                if (currentUser != null) {
+                    val result = db.collection("stores")
+                        .whereEqualTo(
+                            "ownerId",
+                            currentUser.uid
+                        ) // Tiendas creadas por este usuario
+                        .get()
+                        .await()
+                    val storeList = result.documents.mapNotNull { it.toObject(Store::class.java) }
+                    _stores.value = storeList
+                } else {
+                    _stores.value = emptyList()
+                }
+            } catch (e: Exception) {
+                _stores.value = emptyList()
+            }
+        }
+    }
+
     // Agregar una categoría
     fun addCategory(category: Category, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
@@ -78,7 +134,8 @@ class SellerViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 // Verificar que la categoría existe
-                val categoryExists = db.collection("categories").document(product.categoryId).get().await()
+                val categoryExists =
+                    db.collection("categories").document(product.categoryId).get().await()
                 if (!categoryExists.exists()) {
                     onComplete(false)
                     return@launch
@@ -162,7 +219,8 @@ class SellerViewModel : ViewModel() {
             try {
                 val firebaseUser = auth.currentUser
                 firebaseUser?.let {
-                    db.collection("users").document(it.uid).delete().await() // Eliminar de Firestore
+                    db.collection("users").document(it.uid).delete()
+                        .await() // Eliminar de Firestore
                     it.delete().await() // Eliminar de Firebase Authentication
                 }
             } catch (e: Exception) {
@@ -170,5 +228,4 @@ class SellerViewModel : ViewModel() {
             }
         }
     }
-
 }

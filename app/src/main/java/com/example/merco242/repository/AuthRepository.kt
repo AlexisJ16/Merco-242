@@ -20,7 +20,8 @@ class AuthRepositoryImpl : AuthRepository {
         return try {
             // Crear usuario en Firebase Authentication
             val result = auth.createUserWithEmailAndPassword(user.email, password).await()
-            val userId = result.user?.uid ?: return Result.failure(Exception("Error creando el usuario: UID no encontrado"))
+            val userId = result.user?.uid
+                ?: return Result.failure(Exception("Error creando el usuario: UID no encontrado"))
 
             // Intentar guardar los datos del usuario en Firestore
             try {
@@ -39,7 +40,8 @@ class AuthRepositoryImpl : AuthRepository {
                 // Verificar si el documento ya existe, y agregarlo si no existe
                 db.collection(collectionName).document(userId).get().await().let { document ->
                     if (!document.exists()) {
-                        db.collection(collectionName).document(userId).set(userData, SetOptions.merge()).await()
+                        db.collection(collectionName).document(userId)
+                            .set(userData, SetOptions.merge()).await()
                     }
                 }
 
@@ -59,7 +61,8 @@ class AuthRepositoryImpl : AuthRepository {
         return try {
             // Intentar autenticación en Firebase
             val result = auth.signInWithEmailAndPassword(email, password).await()
-            val userId = result.user?.uid ?: return Result.failure(Exception("Usuario no encontrado"))
+            val userId =
+                result.user?.uid ?: return Result.failure(Exception("Usuario no encontrado"))
 
             // Determinar la colección correcta según el tipo de usuario
             val collectionName = if (userType == "buyer") "buyers" else "sellers"

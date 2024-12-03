@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.merco242"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.merco242"
@@ -77,6 +77,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-auth:20.6.0")
     implementation("com.google.android.gms:play-services-base:18.2.0")
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.compose.material3)
 
     // Testing
     testImplementation("junit:junit:4.13.2")
